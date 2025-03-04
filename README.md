@@ -21,6 +21,19 @@ The interview platform is built using the library `streamlit` and the APIs of Op
 - Once in the `code` folder, create the environment from the .yml file by writing `conda env create -f interviewsenv.yml` and confirming with enter (this installs Python and all libraries necessary to run the platform; only needs to be done once)
 - Activate the environment with `conda activate interviews`
 - Start the platform with `streamlit run interview.py`
+- To view interview responses (admin only), run `streamlit run admin.py` instead
+
+## Admin Access
+
+To access the admin view with interview responses:
+1. Update your `.streamlit/secrets.toml` to include admin credentials:
+```toml
+[passwords]
+admin = "your-secure-password-here"
+```
+2. Ensure `LOGINS = True` is set in config.py
+3. Run `streamlit run admin.py`
+4. Log in with the admin username and password
 
 
 ## Paper and citation

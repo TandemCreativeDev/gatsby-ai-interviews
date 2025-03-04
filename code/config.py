@@ -79,7 +79,10 @@ MAX_OUTPUT_TOKENS = 2048
 
 
 # Display login screen with usernames and simple passwords for studies
-LOGINS = False
+LOGINS = True
+
+# Admin access
+ADMIN_USERNAME = "admin"
 
 
 # Directories
