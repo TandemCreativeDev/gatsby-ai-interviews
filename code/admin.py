@@ -27,19 +27,39 @@ def display_time_info(file_path):
         st.error(f"Error reading time information: {e}")
 
 
+def admin_login():
+    """Custom login just for admin page"""
+    def login_form():
+        with st.form("Admin Login"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submitted = st.form_submit_button("Log in")
+            
+            if submitted:
+                # Check if username is admin and password is correct
+                if (username == config.ADMIN_USERNAME and 
+                    username in st.secrets.get("passwords", {}) and 
+                    password == st.secrets.passwords[username]):
+                    st.session_state.admin_logged_in = True
+                    return True
+                else:
+                    st.error("Invalid username or password")
+                    return False
+            return False
+    
+    # Check if already logged in
+    if st.session_state.get("admin_logged_in", False):
+        return True
+        
+    # Show login form
+    return login_form()
+
 def main():
     # Set page title and icon
     st.set_page_config(page_title="Admin View", page_icon="🔒")
     
-    # Check password (displays login screen)
-    pwd_correct, username = check_password()
-    
-    if not pwd_correct:
-        st.stop()
-    
-    # Check if user is admin
-    if username != config.ADMIN_USERNAME:
-        st.error("You don't have permission to view this page.")
+    # Admin login - separate from regular login
+    if not admin_login():
         st.stop()
     
     # Admin view header
