@@ -85,8 +85,11 @@ with col2:
         st.session_state.interview_active = False
         quit_message = "You have cancelled the interview."
         st.session_state.messages.append({"role": "assistant", "content": quit_message})
+        
+        # Use timestamped username to avoid overwriting previous interviews
+        timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
         save_interview_data(
-            st.session_state.username,
+            timestamped_username,
             config.TRANSCRIPTS_DIRECTORY,
             config.TIMES_DIRECTORY,
         )
@@ -267,15 +270,16 @@ if st.session_state.interview_active:
                     final_transcript_stored = False
                     while final_transcript_stored == False:
 
+                        # Always use timestamped filenames to avoid overwriting previous interviews
+                        timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
+                        
                         save_interview_data(
-                            username=st.session_state.username,
+                            username=timestamped_username,
                             transcripts_directory=config.TRANSCRIPTS_DIRECTORY,
                             times_directory=config.TIMES_DIRECTORY,
-                            file_name_addition_transcript=f"_{st.session_state.start_time_file_names}",
-                            file_name_addition_time=f"_{st.session_state.start_time_file_names}",
                         )
 
                         final_transcript_stored = check_if_interview_completed(
-                            config.TRANSCRIPTS_DIRECTORY, st.session_state.username + f"_{st.session_state.start_time_file_names}"
+                            config.TRANSCRIPTS_DIRECTORY, timestamped_username
                         )
                         time.sleep(0.1)

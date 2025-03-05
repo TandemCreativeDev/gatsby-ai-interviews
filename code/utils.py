@@ -43,27 +43,11 @@ def check_password():
 def check_if_interview_completed(directory, username):
     """Check if interview transcript/time file exists which signals that interview was completed."""
 
-    # Test account has multiple interview attempts
-    if username != "testaccount":
-
-        # Check if file exists
-        try:
-            with open(os.path.join(directory, f"{username}.txt"), "r") as _:
-                return True
-
-        except FileNotFoundError:
-            # Also check for timestamped filenames if the plain one doesn't exist
-            try:
-                # If username already contains timestamp (from final save)
-                if "_20" in username:
-                    with open(os.path.join(directory, f"{username}.txt"), "r") as _:
-                        return True
-                return False
-            except FileNotFoundError:
-                return False
-
-    else:
-
+    # Check if file exists
+    try:
+        with open(os.path.join(directory, f"{username}.txt"), "r") as _:
+            return True
+    except FileNotFoundError:
         return False
 
 
