@@ -271,9 +271,11 @@ if st.session_state.interview_active:
                             username=st.session_state.username,
                             transcripts_directory=config.TRANSCRIPTS_DIRECTORY,
                             times_directory=config.TIMES_DIRECTORY,
+                            file_name_addition_transcript=f"_{st.session_state.start_time_file_names}",
+                            file_name_addition_time=f"_{st.session_state.start_time_file_names}",
                         )
 
                         final_transcript_stored = check_if_interview_completed(
-                            config.TRANSCRIPTS_DIRECTORY, st.session_state.username
+                            config.TRANSCRIPTS_DIRECTORY, st.session_state.username + f"_{st.session_state.start_time_file_names}"
                         )
                         time.sleep(0.1)

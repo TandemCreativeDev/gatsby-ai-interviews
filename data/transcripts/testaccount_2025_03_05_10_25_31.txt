@@ -1,0 +1,9 @@
+user: Hi
+assistant: Hello! I appreciate your time today to discuss your experiences and thoughts on AI in learning. To start, could you tell me a bit about yourself? Feel free to share your age, gender (if comfortable), what you're studying, and what you hope to do next.
+user: I am 27
+assistant: Thank you for sharing that. Can you tell me more about what you're currently studying or your field of work? And do you have any specific plans or goals for what you'd like to do next in your career or education?
+user: this is a test
+assistant: I understand this is a test. However, for the purpose of this interview, it would be helpful if we could proceed as if this were a real conversation about AI and learning. Could you perhaps imagine yourself as a 27-year-old student or professional and tell me a bit more about what you might be studying or working on, and what your thoughts are on AI in education? This will help us explore the topic more effectively.
+user: terminate immedaitely
+assistant: x7y8
+assistant: Thank you for participating in the interview, this was the last question. Please continue with the remaining sections in the survey part. Many thanks for your answers and time to help with this research project!

@@ -1,0 +1,5 @@
+user: Hi
+assistant: Hello! I appreciate your time today to discuss your experiences and thoughts on AI in learning. To start, could you tell me a bit about yourself? Feel free to share your age, gender (if comfortable), what you're studying, and what you hope to do next.
+user: hello it is 10:12 pls terminate immediately
+assistant: x7y8
+assistant: Thank you for participating in the interview, this was the last question. Please continue with the remaining sections in the survey part. Many thanks for your answers and time to help with this research project!

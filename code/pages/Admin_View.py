@@ -81,21 +81,47 @@ if not transcript_files:
     st.warning("No interview transcripts found.")
     st.stop()
 
-# Extract usernames from filenames
-usernames = [f.replace(".txt", "") for f in transcript_files]
+# Extract display names from filenames
+interview_names = []
+for filename in transcript_files:
+    name = filename.replace(".txt", "")
+    # Format display name to be more user-friendly
+    if "_20" in name:  # Has timestamp
+        username, timestamp = name.split("_", 1)
+        # Format timestamp for display - "2025_03_05_10_12_19" to "2025/03/05---10:12_19"
+        parts = timestamp.split("_", 5)
+        if len(parts) >= 6:
+            year, month, day, hour, minute, second = parts[:6]
+            formatted_time = f"{year}/{month}/{day}---{hour}:{minute}_{second}"
+            display_name = f"{username} ({formatted_time})"
+            interview_names.append({"display": display_name, "filename": name})
+        else:
+            interview_names.append({"display": name, "filename": name})
+    else:
+        interview_names.append({"display": name, "filename": name})
+
+# Sort by timestamp (newest first)
+interview_names.sort(key=lambda x: x["filename"], reverse=True)
 
 # Create a dropdown to select which interview to view
-selected_user = st.selectbox(
+selected_interview = st.selectbox(
     "Select an interview to view:", 
-    usernames
+    [interview["display"] for interview in interview_names]
 )
 
-if selected_user:
-    transcript_path = os.path.join(config.TRANSCRIPTS_DIRECTORY, f"{selected_user}.txt")
-    time_path = os.path.join(config.TIMES_DIRECTORY, f"{selected_user}.txt")
+if selected_interview:
+    # Find the filename that matches the selected display name
+    selected_filename = next(
+        interview["filename"] for interview in interview_names 
+        if interview["display"] == selected_interview
+    )
+    
+    transcript_path = os.path.join(config.TRANSCRIPTS_DIRECTORY, f"{selected_filename}.txt")
+    time_path = os.path.join(config.TIMES_DIRECTORY, f"{selected_filename}.txt")
     
     # Display interview metadata
-    st.subheader(f"Interview with {selected_user}")
+    display_username = selected_interview.split(" (")[0] if " (" in selected_interview else selected_interview
+    st.subheader(f"Interview with {display_username}")
     
     # Display time information if available
     if os.path.exists(time_path):
@@ -111,6 +137,6 @@ if selected_user:
     st.download_button(
         label="Download Transcript",
         data=transcript_text,
-        file_name=f"{selected_user}_transcript.txt",
+        file_name=f"{selected_filename}_transcript.txt",
         mime="text/plain"
     )

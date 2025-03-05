@@ -52,7 +52,15 @@ def check_if_interview_completed(directory, username):
                 return True
 
         except FileNotFoundError:
-            return False
+            # Also check for timestamped filenames if the plain one doesn't exist
+            try:
+                # If username already contains timestamp (from final save)
+                if "_20" in username:
+                    with open(os.path.join(directory, f"{username}.txt"), "r") as _:
+                        return True
+                return False
+            except FileNotFoundError:
+                return False
 
     else:
 
