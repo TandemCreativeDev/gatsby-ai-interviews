@@ -86,10 +86,16 @@ ADMIN_USERNAME = "admin"
 ADMIN_REQUIRES_LOGIN = True
 
 
-# Directories
-TRANSCRIPTS_DIRECTORY = "../data/transcripts/"
-TIMES_DIRECTORY = "../data/times/"
-BACKUPS_DIRECTORY = "../data/backups/"
+# Directories - use absolute paths for better reliability in production
+import os
+
+# Base directory is the parent of the code directory
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Use absolute paths
+TRANSCRIPTS_DIRECTORY = os.path.join(BASE_DIR, "data/transcripts/")
+TIMES_DIRECTORY = os.path.join(BASE_DIR, "data/times/")
+BACKUPS_DIRECTORY = os.path.join(BASE_DIR, "data/backups/")
 
 
 # Avatars displayed in the chat interface

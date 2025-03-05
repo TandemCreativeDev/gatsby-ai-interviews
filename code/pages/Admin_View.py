@@ -70,10 +70,24 @@ st.write("View completed interview transcripts")
 transcript_files = []
 
 try:
+    # Print path for debugging
+    st.write(f"Looking for transcripts in: {os.path.abspath(config.TRANSCRIPTS_DIRECTORY)}")
+    
+    # Check if directory exists
+    if not os.path.exists(config.TRANSCRIPTS_DIRECTORY):
+        st.error(f"Transcripts directory doesn't exist: {config.TRANSCRIPTS_DIRECTORY}")
+        # Create it to avoid errors
+        os.makedirs(config.TRANSCRIPTS_DIRECTORY, exist_ok=True)
+    
+    # List files
     transcript_files = [
         f for f in os.listdir(config.TRANSCRIPTS_DIRECTORY) 
         if os.path.isfile(os.path.join(config.TRANSCRIPTS_DIRECTORY, f))
     ]
+    
+    # Print files found for debugging
+    st.write(f"Found {len(transcript_files)} transcript files")
+    
 except Exception as e:
     st.error(f"Error accessing transcripts directory: {e}")
 
@@ -85,6 +99,11 @@ if not transcript_files:
 interview_names = []
 for filename in transcript_files:
     name = filename.replace(".txt", "")
+    
+    # Skip non-timestamped files for testaccount (they'd be duplicates)
+    if name == "testaccount":
+        continue
+        
     # Format display name to be more user-friendly
     if "_20" in name:  # Has timestamp
         username, timestamp = name.split("_", 1)
@@ -98,6 +117,7 @@ for filename in transcript_files:
         else:
             interview_names.append({"display": name, "filename": name})
     else:
+        # For non-timestamped files (except testaccount which was skipped)
         interview_names.append({"display": name, "filename": name})
 
 # Sort by timestamp (newest first)
