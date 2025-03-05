@@ -36,12 +36,21 @@ else:
     st.session_state.username = "testaccount"
 
 # Create directories if they do not already exist
-if not os.path.exists(config.TRANSCRIPTS_DIRECTORY):
-    os.makedirs(config.TRANSCRIPTS_DIRECTORY)
-if not os.path.exists(config.TIMES_DIRECTORY):
-    os.makedirs(config.TIMES_DIRECTORY)
-if not os.path.exists(config.BACKUPS_DIRECTORY):
-    os.makedirs(config.BACKUPS_DIRECTORY)
+for directory in [config.TRANSCRIPTS_DIRECTORY, config.TIMES_DIRECTORY, config.BACKUPS_DIRECTORY]:
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+        
+# Print debug information about paths
+st.write(f"### Path Information (hidden in production)")
+st.write(f"Working directory: {os.getcwd()}")
+st.write(f"BASE_DIR: {config.BASE_DIR}")
+st.write(f"TRANSCRIPTS_DIRECTORY: {config.TRANSCRIPTS_DIRECTORY}")
+# This will only show in development, not in the deployed app
+if 'STREAMLIT_CLOUD' not in os.environ:
+    st.write("### Development mode - showing path debug info")
+else:
+    # Remove the debug info in production
+    st.empty()
 
 
 # Initialise session state

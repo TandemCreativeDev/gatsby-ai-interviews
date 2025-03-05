@@ -69,27 +69,40 @@ st.write("View completed interview transcripts")
 # Get list of completed interviews
 transcript_files = []
 
+st.write("### Debugging Information")
+st.write(f"Current working directory: {os.getcwd()}")
+st.write(f"Config BASE_DIR: {config.BASE_DIR}")
+st.write(f"Config TRANSCRIPTS_DIRECTORY: {config.TRANSCRIPTS_DIRECTORY}")
+
 try:
-    # Print path for debugging
-    st.write(f"Looking for transcripts in: {os.path.abspath(config.TRANSCRIPTS_DIRECTORY)}")
-    
-    # Check if directory exists
-    if not os.path.exists(config.TRANSCRIPTS_DIRECTORY):
-        st.error(f"Transcripts directory doesn't exist: {config.TRANSCRIPTS_DIRECTORY}")
-        # Create it to avoid errors
-        os.makedirs(config.TRANSCRIPTS_DIRECTORY, exist_ok=True)
+    # Ensure all data directories exist
+    for dir_path in [config.TRANSCRIPTS_DIRECTORY, config.TIMES_DIRECTORY, config.BACKUPS_DIRECTORY]:
+        if not os.path.exists(dir_path):
+            st.warning(f"Directory doesn't exist, creating: {dir_path}")
+            os.makedirs(dir_path, exist_ok=True)
+        else:
+            st.success(f"Directory exists: {dir_path}")
+            
+    st.write(f"BASE_DIR resolved to: {config.BASE_DIR}")
     
     # List files
+    all_files = os.listdir(config.TRANSCRIPTS_DIRECTORY)
+    st.write(f"Raw files in directory: {all_files}")
+    
     transcript_files = [
-        f for f in os.listdir(config.TRANSCRIPTS_DIRECTORY) 
+        f for f in all_files 
         if os.path.isfile(os.path.join(config.TRANSCRIPTS_DIRECTORY, f))
     ]
     
-    # Print files found for debugging
-    st.write(f"Found {len(transcript_files)} transcript files")
+    # Display all found files
+    st.write(f"Found {len(transcript_files)} transcript files:")
+    for file in transcript_files:
+        st.write(f"- {file}")
     
 except Exception as e:
     st.error(f"Error accessing transcripts directory: {e}")
+    import traceback
+    st.code(traceback.format_exc())
 
 if not transcript_files:
     st.warning("No interview transcripts found.")

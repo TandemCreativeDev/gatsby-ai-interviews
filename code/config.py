@@ -86,16 +86,44 @@ ADMIN_USERNAME = "admin"
 ADMIN_REQUIRES_LOGIN = True
 
 
-# Directories - use absolute paths for better reliability in production
+# Directories - handle paths in a way that works in both local and production environments
 import os
 
-# Base directory is the parent of the code directory
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# Determine the base directory
+def find_project_root():
+    """Find the project root by looking for data/transcripts directory"""
+    # Start with the directory of the current file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Try current directory
+    if os.path.exists(os.path.join(current_dir, "data", "transcripts")):
+        return current_dir
+    
+    # Try one level up (normal local development)
+    parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
+    if os.path.exists(os.path.join(parent_dir, "data", "transcripts")):
+        return parent_dir
+    
+    # Try two levels up (for some Streamlit Cloud configurations)
+    grandparent_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+    if os.path.exists(os.path.join(grandparent_dir, "data", "transcripts")):
+        return grandparent_dir
+    
+    # Default to parent of current directory if we can't find it
+    return parent_dir
+
+# Set base directory
+BASE_DIR = find_project_root()
 
 # Use absolute paths
-TRANSCRIPTS_DIRECTORY = os.path.join(BASE_DIR, "data/transcripts/")
-TIMES_DIRECTORY = os.path.join(BASE_DIR, "data/times/")
-BACKUPS_DIRECTORY = os.path.join(BASE_DIR, "data/backups/")
+TRANSCRIPTS_DIRECTORY = os.path.join(BASE_DIR, "data", "transcripts")
+TIMES_DIRECTORY = os.path.join(BASE_DIR, "data", "times")
+BACKUPS_DIRECTORY = os.path.join(BASE_DIR, "data", "backups")
+
+# Make sure directories end with a slash for consistency
+TRANSCRIPTS_DIRECTORY = os.path.join(TRANSCRIPTS_DIRECTORY, "")
+TIMES_DIRECTORY = os.path.join(TIMES_DIRECTORY, "")
+BACKUPS_DIRECTORY = os.path.join(BACKUPS_DIRECTORY, "")
 
 
 # Avatars displayed in the chat interface
