@@ -76,8 +76,11 @@ try:
             st.text_area("Transcript", interview.get("transcript", ""), height=200)
             if st.button("Delete", key=str(interview.get('_id'))):
                 if delete_interview(interview.get('_id')):
-                    st.success("Interview deleted successfully.")
-                    st.experimental_rerun()
+                    st.success("Interview deleted successfully. Refreshing ...")
+                    if hasattr(st, "experimental_rerun"):
+                        st.experimental_rerun()
+                    else:
+                        st.markdown("<meta http-equiv='refresh' content='0'>", unsafe_allow_html=True)
                 else:
                     st.error("Failed to delete interview.")
             st.download_button(
