@@ -116,6 +116,20 @@ if selected_interview:
         if interview["display"] == selected_interview
     )
     
+# Display Survey Responses from MongoDB
+st.subheader("Survey Responses")
+try:
+    from database import get_collection
+    collection = get_collection()
+    survey_responses = list(collection.find({}))
+    if survey_responses:
+        for response in survey_responses:
+            st.write(response)
+    else:
+        st.info("No survey responses found in the database.")
+except Exception as e:
+    st.error(f"Error fetching survey responses: {e}")
+    
     transcript_path = os.path.join(config.TRANSCRIPTS_DIRECTORY, f"{selected_filename}.txt")
     time_path = os.path.join(config.TIMES_DIRECTORY, f"{selected_filename}.txt")
     
