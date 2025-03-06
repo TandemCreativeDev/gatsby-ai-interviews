@@ -109,3 +109,39 @@ def save_interview(username, transcript, time_data):
         logger.error(error_msg)
         st.error(error_msg)
         return False
+
+def get_interviews(username=None, limit=100):
+    """
+    Retrieve interview data from MongoDB
+    
+    Args:
+        username (str, optional): Filter by username. Defaults to None.
+        limit (int, optional): Maximum number of records to return. Defaults to 100.
+    
+    Returns:
+        list: List of interview documents
+    """
+    try:
+        collection = get_collection()
+        if collection:
+            # Create filter
+            filter_query = {}
+            if username:
+                filter_query["username"] = {"$regex": f"^{username}", "$options": "i"}
+            
+            # Query database
+            cursor = collection.find(filter_query).sort("timestamp", -1).limit(limit)
+            
+            # Convert cursor to list
+            interviews = list(cursor)
+            
+            logger.info(f"Retrieved {len(interviews)} interviews from MongoDB")
+            return interviews
+        else:
+            logger.error("Failed to get MongoDB collection")
+            return []
+    except Exception as e:
+        error_msg = f"Failed to retrieve interview data: {e}"
+        logger.error(error_msg)
+        st.error(error_msg)
+        return []
