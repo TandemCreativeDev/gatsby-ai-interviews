@@ -10,7 +10,7 @@ import config
 def admin_login():
     """Custom login just for admin page"""
     def login_form():
-        with st.form("Admin Login"):
+        with login_placeholder.form("Admin Login"):
             username = st.text_input("Username")
             password = st.text_input("Password", type="password")
             submitted = st.form_submit_button("Log in")
@@ -21,6 +21,7 @@ def admin_login():
                     username in st.secrets.get("passwords", {}) and 
                     password == st.secrets.passwords[username]):
                     st.session_state.admin_logged_in = True
+                    login_placeholder.empty()
                     return True
                 else:
                     st.error("Invalid username or password")
@@ -57,6 +58,7 @@ def display_time_info(file_path):
 
 # Set page title and icon
 st.set_page_config(page_title="Admin View", page_icon="🔒")
+login_placeholder = st.empty()
 
 # Admin login - separate from regular login
 if not admin_login():
