@@ -164,7 +164,7 @@ cython_debug/
 # Mac
 .DS_Store
 
-code/.streamlit/secrets.toml
+secrets.toml
 
 # skynet
 repomix-output.txt
