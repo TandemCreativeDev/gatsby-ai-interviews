@@ -77,6 +77,7 @@ try:
             if st.button("Delete", key=str(interview.get('_id'))):
                 if delete_interview(interview.get('_id')):
                     st.success("Interview deleted successfully.")
+                    st.experimental_rerun()
                 else:
                     st.error("Failed to delete interview.")
             st.download_button(
