@@ -69,31 +69,32 @@ st.write("View completed interview transcripts")
 interview_container = st.container()
 
 def render_interviews():
-    try:
-        from database import get_interviews, delete_interview
-        interviews = get_interviews()
-        if interviews:
-            for interview in interviews:
-                st.subheader(f"Interview with {interview.get('username', 'Unknown')}")
-                st.write(f"Timestamp: {interview.get('timestamp', 'N/A')}")
-                st.text_area("Transcript", interview.get("transcript", ""), height=200)
-                if st.button("Delete", key=str(interview.get('_id'))):
-                    if delete_interview(interview.get('_id')):
-                        st.success("Interview deleted successfully.")
-                        interview_container.empty()
-                        render_interviews()
-                        return
-                    else:
-                        st.error("Failed to delete interview.")
-                st.download_button(
-                    label="Download Transcript",
-                    data=interview.get("transcript", ""),
-                    file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
-                    mime="text/plain"
-                )
-        else:
-            st.info("No interview responses found in the database.")
-    except Exception as e:
-        st.error(f"Error fetching interview responses: {e}")
+    with interview_container:
+        try:
+            from database import get_interviews, delete_interview
+            interviews = get_interviews()
+            if interviews:
+                for interview in interviews:
+                    st.subheader(f"Interview with {interview.get('username', 'Unknown')}")
+                    st.write(f"Timestamp: {interview.get('timestamp', 'N/A')}")
+                    st.text_area("Transcript", interview.get("transcript", ""), height=200)
+                    if st.button("Delete", key=str(interview.get('_id'))):
+                        if delete_interview(interview.get('_id')):
+                            st.success("Interview deleted successfully.")
+                            interview_container.empty()
+                            render_interviews()
+                            return
+                        else:
+                            st.error("Failed to delete interview.")
+                    st.download_button(
+                        label="Download Transcript",
+                        data=interview.get("transcript", ""),
+                        file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
+                        mime="text/plain"
+                    )
+            else:
+                st.info("No interview responses found in the database.")
+        except Exception as e:
+            st.error(f"Error fetching interview responses: {e}")
 
 render_interviews()
