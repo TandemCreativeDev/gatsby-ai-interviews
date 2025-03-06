@@ -35,6 +35,35 @@ if st.sidebar.checkbox("Test MongoDB Connection", False):
     else:
         st.sidebar.error("Failed to connect to MongoDB. Please check your connection string in .streamlit/secrets.toml")
 
+# Import mongo_utils for saving interview data
+from mongo_utils import save_interview_bulk
+
+# Test saving interview data to MongoDB
+if st.sidebar.checkbox("Test Save to MongoDB", False):
+    if st.sidebar.button("Save Test Data"):
+        # Create sample data
+        test_username = f"test_user_{int(time.time())}"
+        test_responses = {
+            "about_user": {
+                "age": "18-24",
+                "gender": "prefer not to say",
+                "education": "undergraduate"
+            }
+        }
+        test_transcript = "Sample interview transcript for testing MongoDB integration."
+        
+        # Save to MongoDB
+        success = save_interview_bulk(
+            username=test_username,
+            responses=test_responses,
+            transcript=test_transcript
+        )
+        
+        if success:
+            st.sidebar.success(f"✅ Successfully saved test data for user: {test_username}")
+        else:
+            st.sidebar.error("❌ Failed to save test data to MongoDB")
+
 # Check if usernames and logins are enabled
 if config.LOGINS:
     # Check password (displays login screen)
