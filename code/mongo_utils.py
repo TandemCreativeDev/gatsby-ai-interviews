@@ -8,6 +8,9 @@ from pymongo.errors import PyMongoError
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Configuration for retry mechanism
+MAX_RETRY_ATTEMPTS = 3
+
 def save_interview_bulk(username, responses, transcript):
     """
     Save interview data to MongoDB in a structured format with retry mechanism
@@ -36,8 +39,7 @@ def save_interview_bulk(username, responses, transcript):
             }
             
             # Retry mechanism with exponential backoff
-            max_attempts = 3
-            for attempt in range(max_attempts):
+            for attempt in range(MAX_RETRY_ATTEMPTS):
                 try:
                     # Insert document into MongoDB
                     result = collection.insert_one(interview_data)
@@ -49,14 +51,15 @@ def save_interview_bulk(username, responses, transcript):
                         logger.warning(f"MongoDB acknowledged=False for user: {username} (attempt {attempt+1})")
                         
                         # If this is the last attempt, return False
-                        if attempt == max_attempts - 1:
+                        if attempt == MAX_RETRY_ATTEMPTS - 1:
                             return False
                             
                 except PyMongoError as e:
                     logger.error(f"MongoDB error on attempt {attempt+1}: {e}")
                     
                     # If this is the last attempt, return False
-                    if attempt == max_attempts - 1:
+                    if attempt == MAX_RETRY_ATTEMPTS - 1:
+                        logger.error(f"All {MAX_RETRY_ATTEMPTS} attempts failed. Giving up.")
                         return False
                         
                     # Calculate wait time with exponential backoff and jitter
