@@ -29,7 +29,7 @@ with st.form("insert_test"):
     
     if submit:
         collection = get_collection()
-        if collection:
+        if collection is not None:
             try:
                 result = collection.insert_one({
                     "test_name": test_name,
@@ -51,13 +51,13 @@ st.header("Recent Test Documents")
 
 if st.button("View Recent Test Documents"):
     collection = get_collection()
-    if collection:
+    if collection is not None:
         try:
             # Find test documents
             cursor = collection.find({"test": True}).sort("timestamp", -1).limit(5)
             documents = list(cursor)
             
-            if documents:
+            if len(documents) > 0:
                 st.write(f"Found {len(documents)} test documents:")
                 for doc in documents:
                     st.write(f"- {doc['test_name']} (ID: {doc['_id']}, Time: {doc['timestamp']})")

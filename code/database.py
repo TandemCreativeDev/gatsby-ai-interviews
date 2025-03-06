@@ -35,7 +35,7 @@ def get_database():
     Get MongoDB database
     """
     client = get_mongo_client()
-    if client:
+    if client is not None:
         return client[config.MONGODB_DB_NAME]
     return None
 
@@ -44,7 +44,7 @@ def get_collection():
     Get MongoDB collection
     """
     db = get_database()
-    if db:
+    if db is not None:
         return db[config.MONGODB_COLLECTION_NAME]
     return None
 
@@ -53,7 +53,7 @@ def test_connection():
     Test MongoDB connection and return collection names
     """
     client = get_mongo_client()
-    if client:
+    if client is not None:
         try:
             db = client[config.MONGODB_DB_NAME]
             collections = list(db.list_collection_names())
@@ -79,7 +79,7 @@ def save_interview(username, transcript, time_data):
     """
     try:
         collection = get_collection()
-        if collection:
+        if collection is not None:
             # Create document
             document = {
                 "username": username,
@@ -123,7 +123,7 @@ def get_interviews(username=None, limit=100):
     """
     try:
         collection = get_collection()
-        if collection:
+        if collection is not None:
             # Create filter
             filter_query = {}
             if username:
