@@ -5,6 +5,7 @@ from utils import (
     check_if_interview_completed,
     save_interview_data,
 )
+from database import test_connection, save_interview
 import os
 import config
 
@@ -23,6 +24,16 @@ else:
 
 # Set page title and icon
 st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
+
+# Test MongoDB connection (temporary for verification)
+if st.sidebar.checkbox("Test MongoDB Connection", False):
+    collections = test_connection()
+    if collections:
+        st.sidebar.success("Successfully connected to MongoDB!")
+        st.sidebar.write("Collections in the database:")
+        st.sidebar.write(collections)
+    else:
+        st.sidebar.error("Failed to connect to MongoDB. Please check your connection string in .streamlit/secrets.toml")
 
 # Check if usernames and logins are enabled
 if config.LOGINS:
@@ -88,11 +99,33 @@ with col2:
         
         # Use timestamped username to avoid overwriting previous interviews
         timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
+        
+        # Save to file system
         save_interview_data(
             timestamped_username,
             config.TRANSCRIPTS_DIRECTORY,
             config.TIMES_DIRECTORY,
         )
+        
+        # Save to MongoDB
+        try:
+            # Get transcript and time data
+            transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages])
+            time_data = {
+                "start_time": st.session_state.start_time,
+                "end_time": time.time(),
+                "duration": time.time() - st.session_state.start_time,
+                "status": "quit"
+            }
+            
+            # Save to MongoDB
+            save_interview(
+                username=timestamped_username,
+                transcript=transcript,
+                time_data=time_data
+            )
+        except Exception as e:
+            st.sidebar.error(f"Failed to save to MongoDB: {e}")
 
 
 # Upon rerun, display the previous conversation (except system prompt or first message)
@@ -235,7 +268,7 @@ if st.session_state.interview_active:
                 # Regularly store interview progress as backup, but prevent script from
                 # stopping in case of a write error
                 try:
-
+                    # Save to file system
                     save_interview_data(
                         username=st.session_state.username,
                         transcripts_directory=config.BACKUPS_DIRECTORY,
@@ -243,9 +276,29 @@ if st.session_state.interview_active:
                         file_name_addition_transcript=f"_transcript_started_{st.session_state.start_time_file_names}",
                         file_name_addition_time=f"_time_started_{st.session_state.start_time_file_names}",
                     )
+                    
+                    # Save to MongoDB (as backup)
+                    try:
+                        # Get transcript and time data
+                        transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages])
+                        time_data = {
+                            "start_time": st.session_state.start_time,
+                            "current_time": time.time(),
+                            "duration_so_far": time.time() - st.session_state.start_time,
+                            "status": "in_progress"
+                        }
+                        
+                        # Save to MongoDB
+                        save_interview(
+                            username=f"{st.session_state.username}_backup_{st.session_state.start_time_file_names}",
+                            transcript=transcript,
+                            time_data=time_data
+                        )
+                    except:
+                        # Silently fail MongoDB backup to not interrupt the interview
+                        pass
 
                 except:
-
                     pass
 
             # If code in the message, display the associated closing message instead
@@ -273,11 +326,34 @@ if st.session_state.interview_active:
                         # Always use timestamped filenames to avoid overwriting previous interviews
                         timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
                         
+                        # Save to file system
                         save_interview_data(
                             username=timestamped_username,
                             transcripts_directory=config.TRANSCRIPTS_DIRECTORY,
                             times_directory=config.TIMES_DIRECTORY,
                         )
+                        
+                        # Save to MongoDB
+                        try:
+                            # Get transcript and time data
+                            transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages])
+                            time_data = {
+                                "start_time": st.session_state.start_time,
+                                "end_time": time.time(),
+                                "duration": time.time() - st.session_state.start_time
+                            }
+                            
+                            # Save to MongoDB
+                            mongo_saved = save_interview(
+                                username=timestamped_username,
+                                transcript=transcript,
+                                time_data=time_data
+                            )
+                            
+                            if mongo_saved:
+                                st.sidebar.success("Interview saved to MongoDB")
+                        except Exception as e:
+                            st.sidebar.error(f"Failed to save to MongoDB: {e}")
 
                         final_transcript_stored = check_if_interview_completed(
                             config.TRANSCRIPTS_DIRECTORY, timestamped_username
