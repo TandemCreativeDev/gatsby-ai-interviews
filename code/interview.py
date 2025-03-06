@@ -53,16 +53,19 @@ if st.sidebar.checkbox("Test Save to MongoDB", False):
         test_transcript = "Sample interview transcript for testing MongoDB integration."
         
         # Save to MongoDB
-        success = save_interview_bulk(
-            username=test_username,
-            responses=test_responses,
-            transcript=test_transcript
-        )
-        
-        if success:
-            st.sidebar.success(f"✅ Successfully saved test data for user: {test_username}")
-        else:
-            st.sidebar.error("❌ Failed to save test data to MongoDB")
+        with st.sidebar.status("Saving to MongoDB...") as status:
+            success = save_interview_bulk(
+                username=test_username,
+                responses=test_responses,
+                transcript=test_transcript
+            )
+            
+            if success:
+                status.update(label="✅ Save successful!", state="complete")
+                st.sidebar.success(f"Successfully saved test data for user: {test_username}")
+            else:
+                status.update(label="❌ Save failed after retries", state="error")
+                st.sidebar.error("Failed to save test data to MongoDB after multiple attempts")
 
 # Check if usernames and logins are enabled
 if config.LOGINS:

@@ -1,6 +1,8 @@
 import time
+import random
 from database import get_collection
 import logging
+from pymongo.errors import PyMongoError
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -8,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def save_interview_bulk(username, responses, transcript):
     """
-    Save interview data to MongoDB in a structured format
+    Save interview data to MongoDB in a structured format with retry mechanism
     
     Args:
         username (str): Username of the interviewee
@@ -33,15 +35,37 @@ def save_interview_bulk(username, responses, transcript):
                 "sentiment_analysis": {}
             }
             
-            # Insert document into MongoDB
-            result = collection.insert_one(interview_data)
+            # Retry mechanism with exponential backoff
+            max_attempts = 3
+            for attempt in range(max_attempts):
+                try:
+                    # Insert document into MongoDB
+                    result = collection.insert_one(interview_data)
+                    
+                    if result.acknowledged:
+                        logger.info(f"Successfully saved bulk interview data for user: {username} (attempt {attempt+1})")
+                        return True
+                    else:
+                        logger.warning(f"MongoDB acknowledged=False for user: {username} (attempt {attempt+1})")
+                        
+                        # If this is the last attempt, return False
+                        if attempt == max_attempts - 1:
+                            return False
+                            
+                except PyMongoError as e:
+                    logger.error(f"MongoDB error on attempt {attempt+1}: {e}")
+                    
+                    # If this is the last attempt, return False
+                    if attempt == max_attempts - 1:
+                        return False
+                        
+                    # Calculate wait time with exponential backoff and jitter
+                    wait_time = 2 ** attempt + random.uniform(0, 1)
+                    logger.info(f"Retrying in {wait_time:.2f} seconds...")
+                    time.sleep(wait_time)
             
-            if result.acknowledged:
-                logger.info(f"Successfully saved bulk interview data for user: {username}")
-                return True
-            else:
-                logger.warning(f"MongoDB acknowledged=False for user: {username}")
-                return False
+            # This should not be reached, but just in case
+            return False
         else:
             logger.error("Failed to get MongoDB collection")
             return False
