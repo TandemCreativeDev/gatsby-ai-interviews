@@ -145,3 +145,31 @@ def get_interviews(username=None, limit=100):
         logger.error(error_msg)
         st.error(error_msg)
         return []
+        
+def delete_interview(interview_id):
+    """
+    Delete interview data from MongoDB by its _id.
+    
+    Args:
+        interview_id: The _id of the interview document.
+    
+    Returns:
+        bool: True if deletion was successful, False otherwise.
+    """
+    try:
+        collection = get_collection()
+        if collection is not None:
+            result = collection.delete_one({"_id": interview_id})
+            if result.deleted_count == 1:
+                logger.info(f"Successfully deleted interview with id: {interview_id}")
+                return True
+            else:
+                logger.warning(f"No document found with id: {interview_id}")
+                return False
+        else:
+            logger.error("Failed to get MongoDB collection for deletion")
+            return False
+    except Exception as e:
+        error_msg = f"Failed to delete interview data: {e}"
+        logger.error(error_msg)
+        return False

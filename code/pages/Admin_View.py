@@ -67,13 +67,18 @@ st.title("Interview Responses Admin View")
 st.write("View completed interview transcripts")
 
 try:
-    from database import get_interviews
+    from database import get_interviews, delete_interview
     interviews = get_interviews()
     if interviews:
         for interview in interviews:
             st.subheader(f"Interview with {interview.get('username', 'Unknown')}")
             st.write(f"Timestamp: {interview.get('timestamp', 'N/A')}")
             st.text_area("Transcript", interview.get("transcript", ""), height=200)
+            if st.button("Delete", key=str(interview.get('_id'))):
+                if delete_interview(interview.get('_id')):
+                    st.success("Interview deleted successfully.")
+                else:
+                    st.error("Failed to delete interview.")
             st.download_button(
                 label="Download Transcript",
                 data=interview.get("transcript", ""),
