@@ -2,6 +2,11 @@ import streamlit as st
 from pymongo import MongoClient
 import config
 import datetime
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def get_mongo_client():
     """
@@ -16,10 +21,13 @@ def get_mongo_client():
         
         # Test connection
         client.admin.command('ping')
+        logger.info("MongoDB connection successful")
         
         return client
     except Exception as e:
-        st.error(f"Failed to connect to MongoDB: {e}")
+        error_msg = f"Failed to connect to MongoDB: {e}"
+        logger.error(error_msg)
+        st.error(error_msg)
         return None
 
 def get_database():
@@ -46,11 +54,17 @@ def test_connection():
     """
     client = get_mongo_client()
     if client:
-        db = client[config.MONGODB_DB_NAME]
-        return list(db.list_collection_names())
+        try:
+            db = client[config.MONGODB_DB_NAME]
+            collections = list(db.list_collection_names())
+            logger.info(f"Found collections: {collections}")
+            return collections
+        except Exception as e:
+            error_msg = f"Error listing collections: {e}"
+            logger.error(error_msg)
+            st.error(error_msg)
     return []
 
-# Example function to save interview data to MongoDB
 def save_interview(username, transcript, time_data):
     """
     Save interview data to MongoDB
@@ -71,14 +85,27 @@ def save_interview(username, transcript, time_data):
                 "username": username,
                 "transcript": transcript,
                 "time_data": time_data,
-                "timestamp": datetime.datetime.now()
+                "timestamp": datetime.datetime.now(),
+                "metadata": {
+                    "version": "1.0",
+                    "source": "ai_interview_system"
+                }
             }
             
             # Insert document
             result = collection.insert_one(document)
             
-            return result.acknowledged
-        return False
+            if result.acknowledged:
+                logger.info(f"Successfully saved interview data for user: {username}")
+                return True
+            else:
+                logger.warning(f"MongoDB acknowledged=False for user: {username}")
+                return False
+        else:
+            logger.error("Failed to get MongoDB collection")
+            return False
     except Exception as e:
-        st.error(f"Failed to save interview data: {e}")
+        error_msg = f"Failed to save interview data: {e}"
+        logger.error(error_msg)
+        st.error(error_msg)
         return False

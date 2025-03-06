@@ -91,6 +91,10 @@ TRANSCRIPTS_DIRECTORY = "../data/transcripts/"
 TIMES_DIRECTORY = "../data/times/"
 BACKUPS_DIRECTORY = "../data/backups/"
 
+# MongoDB Configuration
+MONGODB_DB_NAME = "AIinterview_database"
+MONGODB_COLLECTION_NAME = "responses"
+
 
 # Avatars displayed in the chat interface
 AVATAR_INTERVIEWER = "\U0001F393"
