@@ -65,6 +65,17 @@ if not admin_login():
 # Admin view header
 st.title("Interview Responses Admin View")
 st.write("View completed interview transcripts")
+ 
+if "refresh_counter" not in st.session_state:
+    st.session_state.refresh_counter = 0
+
+def delete_and_refresh(interview_id):
+    from database import delete_interview
+    if delete_interview(interview_id):
+        st.success("Interview deleted successfully.")
+    else:
+        st.error("Failed to delete interview.")
+    st.session_state.refresh_counter += 1
 
 interview_container = st.container()
 
@@ -78,20 +89,16 @@ def render_interviews():
                     st.subheader(f"Interview with {interview.get('username', 'Unknown')}")
                     st.write(f"Timestamp: {interview.get('timestamp', 'N/A')}")
                     st.text_area("Transcript", interview.get("transcript", ""), height=200)
-                    if st.button("Delete", key=str(interview.get('_id'))):
-                        if delete_interview(interview.get('_id')):
-                            st.success("Interview deleted successfully.")
-                            interview_container.empty()
-                            render_interviews()
-                            return
-                        else:
-                            st.error("Failed to delete interview.")
-                    st.download_button(
-                        label="Download Transcript",
-                        data=interview.get("transcript", ""),
-                        file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
-                        mime="text/plain"
-                    )
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.button("Delete", key=str(interview.get('_id')), on_click=delete_and_refresh, args=(interview.get('_id'),))
+                    with col2:
+                        st.download_button(
+                            label="Download Transcript",
+                            data=interview.get("transcript", ""),
+                            file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
+                            mime="text/plain"
+                        )
             else:
                 st.info("No interview responses found in the database.")
         except Exception as e:
