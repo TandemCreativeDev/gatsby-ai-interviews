@@ -91,16 +91,13 @@ def render_interviews():
                     st.subheader(f"Interview with {interview.get('username', 'Unknown')}")
                     st.write(f"Timestamp: {interview.get('timestamp', 'N/A')}")
                     st.text_area("Transcript", interview.get("transcript", ""), height=200)
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.button("Delete", key=str(interview.get('_id')), on_click=delete_and_refresh, args=(interview.get('_id'),))
-                    with col2:
-                        st.download_button(
-                            label="Download Transcript",
-                            data=interview.get("transcript", ""),
-                            file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
-                            mime="text/plain"
-                        )
+                    st.button("Delete", key=str(interview.get('_id')), on_click=delete_and_refresh, args=(interview.get('_id'),))
+                    st.download_button(
+                        label="Download Transcript",
+                        data=interview.get("transcript", ""),
+                        file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
+                        mime="text/plain"
+                    )
             else:
                 st.info("No interview responses found in the database.")
         except Exception as e:
