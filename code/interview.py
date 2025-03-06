@@ -368,7 +368,7 @@ if st.session_state.interview_active:
                         # Save to MongoDB
                         try:
                             # Get transcript and time data
-                            transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages])
+                            transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != "system"])
                             time_data = {
                                 "start_time": st.session_state.start_time,
                                 "end_time": time.time(),
