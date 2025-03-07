@@ -10,7 +10,7 @@ import config
 def admin_login():
     """Custom login just for admin page"""
     def login_form():
-        with st.form("Admin Login"):
+        with login_placeholder.form("Admin Login"):
             username = st.text_input("Username")
             password = st.text_input("Password", type="password")
             submitted = st.form_submit_button("Log in")
@@ -21,6 +21,7 @@ def admin_login():
                     username in st.secrets.get("passwords", {}) and 
                     password == st.secrets.passwords[username]):
                     st.session_state.admin_logged_in = True
+                    login_placeholder.empty()
                     return True
                 else:
                     st.error("Invalid username or password")
@@ -57,6 +58,7 @@ def display_time_info(file_path):
 
 # Set page title and icon
 st.set_page_config(page_title="Admin View", page_icon="🔒")
+login_placeholder = st.empty()
 
 # Admin login - separate from regular login
 if not admin_login():
@@ -65,78 +67,40 @@ if not admin_login():
 # Admin view header
 st.title("Interview Responses Admin View")
 st.write("View completed interview transcripts")
+ 
+if "refresh_counter" not in st.session_state:
+    st.session_state.refresh_counter = 0
 
-# Get list of completed interviews
-transcript_files = []
-
-try:
-    transcript_files = [
-        f for f in os.listdir(config.TRANSCRIPTS_DIRECTORY) 
-        if os.path.isfile(os.path.join(config.TRANSCRIPTS_DIRECTORY, f))
-    ]
-except Exception as e:
-    st.error(f"Error accessing transcripts directory: {e}")
-
-if not transcript_files:
-    st.warning("No interview transcripts found.")
-    st.stop()
-
-# Extract display names from filenames
-interview_names = []
-for filename in transcript_files:
-    name = filename.replace(".txt", "")
-    # Format display name to be more user-friendly
-    if "_20" in name:  # Has timestamp
-        username, timestamp = name.split("_", 1)
-        # Format timestamp for display - "2025_03_05_10_12_19" to "2025/03/05---10:12_19"
-        parts = timestamp.split("_", 5)
-        if len(parts) >= 6:
-            year, month, day, hour, minute, second = parts[:6]
-            formatted_time = f"{year}/{month}/{day}---{hour}:{minute}_{second}"
-            display_name = f"{username} ({formatted_time})"
-            interview_names.append({"display": display_name, "filename": name})
-        else:
-            interview_names.append({"display": name, "filename": name})
+def delete_and_refresh(interview_id):
+    from database import delete_interview
+    if delete_interview(interview_id):
+        st.success("Interview deleted successfully.")
     else:
-        interview_names.append({"display": name, "filename": name})
+        st.error("Failed to delete interview.")
+    st.session_state.refresh_counter += 1
 
-# Sort by timestamp (newest first)
-interview_names.sort(key=lambda x: x["filename"], reverse=True)
+interview_container = st.container()
 
-# Create a dropdown to select which interview to view
-selected_interview = st.selectbox(
-    "Select an interview to view:", 
-    [interview["display"] for interview in interview_names]
-)
+def render_interviews():
+    with interview_container:
+        try:
+            from database import get_interviews, delete_interview
+            interviews = get_interviews()
+            if interviews:
+                for interview in interviews:
+                    st.subheader(f"Interview with {interview.get('username', 'Unknown')}")
+                    st.write(f"Timestamp: {interview.get('timestamp', 'N/A')}")
+                    st.text_area("Transcript", interview.get("transcript", ""), height=200)
+                    st.button("Delete", key=str(interview.get('_id')), on_click=delete_and_refresh, args=(interview.get('_id'),))
+                    st.download_button(
+                        label="Download Transcript",
+                        data=interview.get("transcript", ""),
+                        file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
+                        mime="text/plain"
+                    )
+            else:
+                st.info("No interview responses found in the database.")
+        except Exception as e:
+            st.error(f"Error fetching interview responses: {e}")
 
-if selected_interview:
-    # Find the filename that matches the selected display name
-    selected_filename = next(
-        interview["filename"] for interview in interview_names 
-        if interview["display"] == selected_interview
-    )
-    
-    transcript_path = os.path.join(config.TRANSCRIPTS_DIRECTORY, f"{selected_filename}.txt")
-    time_path = os.path.join(config.TIMES_DIRECTORY, f"{selected_filename}.txt")
-    
-    # Display interview metadata
-    display_username = selected_interview.split(" (")[0] if " (" in selected_interview else selected_interview
-    st.subheader(f"Interview with {display_username}")
-    
-    # Display time information if available
-    if os.path.exists(time_path):
-        display_time_info(time_path)
-    
-    # Display the transcript
-    display_transcript(transcript_path)
-    
-    # Option to download the transcript
-    with open(transcript_path, "r") as f:
-        transcript_text = f.read()
-        
-    st.download_button(
-        label="Download Transcript",
-        data=transcript_text,
-        file_name=f"{selected_filename}_transcript.txt",
-        mime="text/plain"
-    )
+render_interviews()
