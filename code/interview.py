@@ -1,3 +1,4 @@
+
 import streamlit as st
 import time
 from utils import (
@@ -24,6 +25,9 @@ else:
 
 # Set page title and icon
 st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
+
+st.sidebar.image("../assets/GATSBY_Logo_RGB.png", width=200)
+
 
 # Test MongoDB connection (temporary for verification)
 if st.sidebar.checkbox("Test MongoDB Connection", False):
