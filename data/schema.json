@@ -1,0 +1,57 @@
+{
+  "_id": "ObjectId",
+  "user_id": "hashed_id_12345",
+  "age_range": "18-24",
+  "gender": "Non-binary",
+  "school": "XYZ University",
+  "start_time": "2025-03-06T14:30:00Z",
+  "end_time": "2025-03-06T14:55:00Z",
+  "completed": true,
+  "responses": {
+    "about_user": {
+      "age": "18-24",
+      "gender": "Non-binary",
+      "study_field": "Computer Science",
+      "career_aspiration": "Software Engineer"
+    },
+    "ai_in_learning": {
+      "uses_ai": true,
+      "ai_usage": ["Researching", "Coding"],
+      "effective_aspects": "AI helps automate coding tasks",
+      "ineffective_aspects": "Struggles with creativity",
+      "teacher_opinion": "Some teachers discourage AI for writing"
+    },
+    "ai_outside_learning": {
+      "uses_ai": true,
+      "ai_usage": ["Gaming", "Personal organization"],
+      "comparison_to_learning": "More casual, less structured"
+    },
+    "ai_in_teaching": {
+      "lesson_planning": "Could help teachers prepare faster",
+      "feedback_marking": "Concerns about bias in AI feedback",
+      "resource_creation": "Helpful, but still needs human oversight"
+    },
+    "concerns_about_ai": {
+      "education": "Over-reliance on AI",
+      "society": "Bias in AI decision-making",
+      "workplace": "Job displacement risks"
+    },
+    "future_with_ai": {
+      "career_importance": "Very important in software engineering",
+      "preparedness": "Somewhat prepared",
+      "skills_to_develop": ["Machine Learning", "Data Analysis"]
+    },
+    "ai_vs_past_generations": {
+      "education": "More interactive learning",
+      "work": "More automation",
+      "daily_life": "AI-powered assistants"
+    }
+  },
+  "full_transcript": "Interviewer: Hello! Can you tell me about yourself? ...",
+  "sentiment_analysis": {
+    "overall": "Positive",
+    "education": "Neutral",
+    "workplace": "Positive",
+    "society": "Concerned"
+  }
+}

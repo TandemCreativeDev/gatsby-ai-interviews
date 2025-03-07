@@ -73,7 +73,7 @@ SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
 
 
 # API parameters
-MODEL = "claude-3-5-sonnet-20240620"  # or e.g. "claude-3-5-sonnet-20240620" (OpenAI GPT or Anthropic Claude models)
+MODEL = "gpt-4.5-preview"  # or e.g. "claude-3-5-sonnet-20240620" (OpenAI GPT or Anthropic Claude models)
 TEMPERATURE = None  # (None for default value)
 MAX_OUTPUT_TOKENS = 2048
 
@@ -90,6 +90,10 @@ ADMIN_REQUIRES_LOGIN = True
 TRANSCRIPTS_DIRECTORY = "../data/transcripts/"
 TIMES_DIRECTORY = "../data/times/"
 BACKUPS_DIRECTORY = "../data/backups/"
+
+# MongoDB Configuration
+MONGODB_DB_NAME = "AIinterview_database"
+MONGODB_COLLECTION_NAME = "responses"
 
 
 # Avatars displayed in the chat interface
