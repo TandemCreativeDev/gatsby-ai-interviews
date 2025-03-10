@@ -1,5 +1,5 @@
 import streamlit as st
-from pymongo import MongoClient
+from pymongo import MongoClient, ReturnDocument
 import config
 import datetime
 import logging
@@ -80,7 +80,8 @@ def save_interview(username, transcript, time_data):
     try:
         collection = get_collection()
         if collection is not None:
-            # Create document
+            from pymongo import ReturnDocument
+            # Create document with backup flag set to False (final save)
             document = {
                 "username": username,
                 "transcript": transcript,
@@ -89,17 +90,28 @@ def save_interview(username, transcript, time_data):
                 "metadata": {
                     "version": "1.0",
                     "source": "ai_interview_system"
-                }
+                },
+                "backup": False
             }
             
-            # Insert document
-            result = collection.insert_one(document)
+            if "mongo_doc_id" in st.session_state:
+                filter_query = {"_id": st.session_state.mongo_doc_id}
+            else:
+                filter_query = {"username": username}
             
-            if result.acknowledged:
+            updated_doc = collection.find_one_and_update(
+                filter_query,
+                {"$set": document},
+                upsert=True,
+                return_document=ReturnDocument.AFTER
+            )
+            
+            if updated_doc:
+                st.session_state.mongo_doc_id = updated_doc["_id"]
                 logger.info(f"Successfully saved interview data for user: {username}")
                 return True
             else:
-                logger.warning(f"MongoDB acknowledged=False for user: {username}")
+                logger.warning(f"Failed to update interview data for user: {username}")
                 return False
         else:
             logger.error("Failed to get MongoDB collection")

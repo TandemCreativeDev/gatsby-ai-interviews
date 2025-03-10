@@ -1,5 +1,6 @@
 import time
 import random
+import streamlit as st
 from database import get_collection
 import logging
 from pymongo.errors import PyMongoError
@@ -27,9 +28,10 @@ def save_interview_bulk(username, responses, transcript):
         # Get MongoDB collection
         collection = get_collection()
         if collection is not None:
-            # Create interview data document
+            # Create interview data document with backup flag
             interview_data = {
                 "user_id": username,
+                "backup": True,
                 "start_time": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "end_time": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "completed": True,
@@ -38,13 +40,25 @@ def save_interview_bulk(username, responses, transcript):
                 "sentiment_analysis": {}
             }
             
+            # Determine filter query: use stored _id if available; otherwise, fall back to user_id.
+            if "mongo_doc_id" in st.session_state:
+                filter_query = {"_id": st.session_state.mongo_doc_id}
+            else:
+                filter_query = {"user_id": username}
+            
             # Retry mechanism with exponential backoff
             for attempt in range(MAX_RETRY_ATTEMPTS):
                 try:
-                    # Upsert document into MongoDB (overwrite existing document or insert new)
-                    result = collection.update_one({"user_id": username}, {"$set": interview_data}, upsert=True)
+                    from pymongo import ReturnDocument
+                    updated_doc = collection.find_one_and_update(
+                        filter_query,
+                        {"$set": interview_data},
+                        upsert=True,
+                        return_document=ReturnDocument.AFTER
+                    )
                     
-                    if result.acknowledged:
+                    if updated_doc:
+                        st.session_state.mongo_doc_id = updated_doc["_id"]
                         logger.info(f"Successfully saved bulk interview data for user: {username} (attempt {attempt+1})")
                         return True
                     else:
