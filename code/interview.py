@@ -26,7 +26,7 @@ else:
 # Set page title and icon
 st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
 
-st.sidebar.image("assets/GATSBY_Logo_RGB.png", width=200)
+st.sidebar.image("code/assets/GATSBY_Logo_RGB.png", width=200)
 
 
 # Test MongoDB connection (temporary for verification)
