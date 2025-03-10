@@ -26,7 +26,9 @@ else:
 # Set page title and icon
 st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
 
-st.sidebar.image("code/assets/GATSBY_Logo_RGB.png", width=200)
+# Use a dynamic path that works both locally and in deployment
+image_path = "assets/GATSBY_Logo_RGB.png" if os.path.exists("assets/GATSBY_Logo_RGB.png") else "code/assets/GATSBY_Logo_RGB.png"
+st.sidebar.image(image_path, width=200)
 
 
 # Test MongoDB connection (temporary for verification)
