@@ -86,7 +86,7 @@ if config.LOGINS:
     else:
         st.session_state.username = username
 else:
-    st.session_state.username = "testaccount"
+    st.session_state.username = "user"
 
 # Create directories if they do not already exist
 if not os.path.exists(config.TRANSCRIPTS_DIRECTORY):
