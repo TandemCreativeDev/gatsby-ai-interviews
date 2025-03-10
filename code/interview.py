@@ -213,8 +213,8 @@ if not st.session_state.messages:
             except Exception as e:
                 st.error("We are currently experiencing technical issues, please try again later")
                 st.info("Please inform the study coordinator about this issue")
-                # Log the actual error for developers
-                st.runtime.legacy_caching.utils._LOGGER.error(f"OpenAI API error: {str(e)}")
+                # Log the error without displaying traceback in UI
+                print(f"OpenAI API error: {str(e)}")  # This will be logged in the console only
                 message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
                 st.markdown(message_interviewer)
 
@@ -234,8 +234,8 @@ if not st.session_state.messages:
             except Exception as e:
                 st.error("We are currently experiencing technical issues, please try again later")
                 st.info("Please inform the study coordinator about this issue")
-                # Log the actual error for developers
-                st.runtime.legacy_caching.utils._LOGGER.error(f"Anthropic API error: {str(e)}")
+                # Log the error without displaying traceback in UI
+                print(f"Anthropic API error: {str(e)}")  # This will be logged in the console only
                 message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
                 message_placeholder.markdown(message_interviewer)
 
@@ -298,8 +298,8 @@ if st.session_state.interview_active:
                 except Exception as e:
                     st.error("We are currently experiencing technical issues, please try again later")
                     st.info("Please inform the study coordinator about this issue")
-                    # Log the actual error for developers
-                    st.runtime.legacy_caching.utils._LOGGER.error(f"OpenAI API error: {str(e)}")
+                    # Log the error without displaying traceback in UI
+                    print(f"OpenAI API error: {str(e)}")  # This will be logged in the console only
                     message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
 
             elif api == "anthropic":
@@ -323,8 +323,8 @@ if st.session_state.interview_active:
                 except Exception as e:
                     st.error("We are currently experiencing technical issues, please try again later")
                     st.info("Please inform the study coordinator about this issue")
-                    # Log the actual error for developers
-                    st.runtime.legacy_caching.utils._LOGGER.error(f"Anthropic API error: {str(e)}")
+                    # Log the error without displaying traceback in UI
+                    print(f"Anthropic API error: {str(e)}")  # This will be logged in the console only
                     message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
 
             # If no code is in the message, display and store the message
