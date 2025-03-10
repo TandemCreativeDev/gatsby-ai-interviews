@@ -87,9 +87,9 @@ ADMIN_REQUIRES_LOGIN = True
 
 
 # Directories
-TRANSCRIPTS_DIRECTORY = "../data/transcripts/"
-TIMES_DIRECTORY = "../data/times/"
-BACKUPS_DIRECTORY = "../data/backups/"
+TRANSCRIPTS_DIRECTORY = "../backup/transcripts/"
+TIMES_DIRECTORY = "../backup/times/"
+BACKUPS_DIRECTORY = "../backup/backups/"
 
 # MongoDB Configuration
 MONGODB_DB_NAME = "AIinterview_database"
