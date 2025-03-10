@@ -4,6 +4,8 @@ import streamlit as st
 from database import get_collection
 import logging
 from pymongo.errors import PyMongoError
+import json
+import os
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -66,7 +68,7 @@ def save_interview_bulk(username, responses, transcript):
                         
                         # If this is the last attempt, return False
                         if attempt == MAX_RETRY_ATTEMPTS - 1:
-                            return False
+                            break
                             
                 except PyMongoError as e:
                     logger.error(f"MongoDB error on attempt {attempt+1}: {e}")
@@ -74,7 +76,7 @@ def save_interview_bulk(username, responses, transcript):
                     # If this is the last attempt, return False
                     if attempt == MAX_RETRY_ATTEMPTS - 1:
                         logger.error(f"All {MAX_RETRY_ATTEMPTS} attempts failed. Giving up.")
-                        return False
+                        break
                         
                     # Calculate wait time with exponential backoff and jitter
                     wait_time = 2 ** attempt + random.uniform(0, 1)
@@ -82,6 +84,14 @@ def save_interview_bulk(username, responses, transcript):
                     time.sleep(wait_time)
             
             # This should not be reached, but just in case
+            logger.error(f"All {MAX_RETRY_ATTEMPTS} attempts failed. Falling back to JSON backup.")
+            backup_dir = os.path.join("backup", "backups")
+            os.makedirs(backup_dir, exist_ok=True)
+            filename = f"interview_{username}_{int(time.time())}.json"
+            backup_path = os.path.join(backup_dir, filename)
+            with open(backup_path, "w", encoding="utf-8") as f:
+                json.dump(interview_data, f, indent=4)
+            logger.info(f"Saved interview data to fallback JSON backup file: {backup_path}")
             return False
         else:
             logger.error("Failed to get MongoDB collection")
