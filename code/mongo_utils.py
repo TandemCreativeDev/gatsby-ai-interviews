@@ -41,8 +41,8 @@ def save_interview_bulk(username, responses, transcript):
             # Retry mechanism with exponential backoff
             for attempt in range(MAX_RETRY_ATTEMPTS):
                 try:
-                    # Insert document into MongoDB
-                    result = collection.insert_one(interview_data)
+                    # Upsert document into MongoDB (overwrite existing document or insert new)
+                    result = collection.update_one({"user_id": username}, {"$set": interview_data}, upsert=True)
                     
                     if result.acknowledged:
                         logger.info(f"Successfully saved bulk interview data for user: {username} (attempt {attempt+1})")
