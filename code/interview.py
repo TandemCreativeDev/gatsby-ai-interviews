@@ -28,7 +28,11 @@ st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
 
 # Use a dynamic path that works both locally and in deployment
 image_path = "assets/GATSBY_Logo_RGB.png" if os.path.exists("assets/GATSBY_Logo_RGB.png") else "code/assets/GATSBY_Logo_RGB.png"
-st.sidebar.image(image_path, width=200)
+# Create columns in the sidebar to center a smaller image
+col1, col2, col3 = st.sidebar.columns([1, 2, 1])
+with col2:
+    # Display smaller centered image without pixelation by retaining aspect ratio
+    st.image(image_path, use_container_width=True)
 
 
 # Test MongoDB connection (temporary for verification)
