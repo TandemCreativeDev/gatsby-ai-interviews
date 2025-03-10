@@ -207,8 +207,16 @@ if not st.session_state.messages:
             {"role": "system", "content": config.SYSTEM_PROMPT}
         )
         with st.chat_message("assistant", avatar=config.AVATAR_INTERVIEWER):
-            stream = client.chat.completions.create(**api_kwargs)
-            message_interviewer = st.write_stream(stream)
+            try:
+                stream = client.chat.completions.create(**api_kwargs)
+                message_interviewer = st.write_stream(stream)
+            except Exception as e:
+                st.error("We are currently experiencing technical issues, please try again later")
+                st.info("Please inform the study coordinator about this issue")
+                # Log the error without displaying traceback in UI
+                print(f"OpenAI API error: {str(e)}")  # This will be logged in the console only
+                message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
+                st.markdown(message_interviewer)
 
     elif api == "anthropic":
 
@@ -216,12 +224,20 @@ if not st.session_state.messages:
         with st.chat_message("assistant", avatar=config.AVATAR_INTERVIEWER):
             message_placeholder = st.empty()
             message_interviewer = ""
-            with client.messages.stream(**api_kwargs) as stream:
-                for text_delta in stream.text_stream:
-                    if text_delta != None:
-                        message_interviewer += text_delta
-                    message_placeholder.markdown(message_interviewer + "▌")
-            message_placeholder.markdown(message_interviewer)
+            try:
+                with client.messages.stream(**api_kwargs) as stream:
+                    for text_delta in stream.text_stream:
+                        if text_delta != None:
+                            message_interviewer += text_delta
+                        message_placeholder.markdown(message_interviewer + "▌")
+                message_placeholder.markdown(message_interviewer)
+            except Exception as e:
+                st.error("We are currently experiencing technical issues, please try again later")
+                st.info("Please inform the study coordinator about this issue")
+                # Log the error without displaying traceback in UI
+                print(f"Anthropic API error: {str(e)}")  # This will be logged in the console only
+                message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
+                message_placeholder.markdown(message_interviewer)
 
     st.session_state.messages.append(
         {"role": "assistant", "content": message_interviewer}
@@ -262,28 +278,11 @@ if st.session_state.interview_active:
             if api == "openai":
 
                 # Stream responses
-                stream = client.chat.completions.create(**api_kwargs)
+                try:
+                    stream = client.chat.completions.create(**api_kwargs)
 
-                for message in stream:
-                    text_delta = message.choices[0].delta.content
-                    if text_delta != None:
-                        message_interviewer += text_delta
-                    # Start displaying message only after 5 characters to first check for codes
-                    if len(message_interviewer) > 5:
-                        message_placeholder.markdown(message_interviewer + "▌")
-                    if any(
-                        code in message_interviewer
-                        for code in config.CLOSING_MESSAGES.keys()
-                    ):
-                        # Stop displaying the progress of the message in case of a code
-                        message_placeholder.empty()
-                        break
-
-            elif api == "anthropic":
-
-                # Stream responses
-                with client.messages.stream(**api_kwargs) as stream:
-                    for text_delta in stream.text_stream:
+                    for message in stream:
+                        text_delta = message.choices[0].delta.content
                         if text_delta != None:
                             message_interviewer += text_delta
                         # Start displaying message only after 5 characters to first check for codes
@@ -296,6 +295,37 @@ if st.session_state.interview_active:
                             # Stop displaying the progress of the message in case of a code
                             message_placeholder.empty()
                             break
+                except Exception as e:
+                    st.error("We are currently experiencing technical issues, please try again later")
+                    st.info("Please inform the study coordinator about this issue")
+                    # Log the error without displaying traceback in UI
+                    print(f"OpenAI API error: {str(e)}")  # This will be logged in the console only
+                    message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
+
+            elif api == "anthropic":
+
+                # Stream responses
+                try:
+                    with client.messages.stream(**api_kwargs) as stream:
+                        for text_delta in stream.text_stream:
+                            if text_delta != None:
+                                message_interviewer += text_delta
+                            # Start displaying message only after 5 characters to first check for codes
+                            if len(message_interviewer) > 5:
+                                message_placeholder.markdown(message_interviewer + "▌")
+                            if any(
+                                code in message_interviewer
+                                for code in config.CLOSING_MESSAGES.keys()
+                            ):
+                                # Stop displaying the progress of the message in case of a code
+                                message_placeholder.empty()
+                                break
+                except Exception as e:
+                    st.error("We are currently experiencing technical issues, please try again later")
+                    st.info("Please inform the study coordinator about this issue")
+                    # Log the error without displaying traceback in UI
+                    print(f"Anthropic API error: {str(e)}")  # This will be logged in the console only
+                    message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
 
             # If no code is in the message, display and store the message
             if not any(
