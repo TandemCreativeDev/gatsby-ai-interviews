@@ -5,7 +5,7 @@ from mongo_utils import save_interview_bulk
 from utils import (
     check_password,
 )
-from database import test_connection, save_interview, get_interviews
+from database import test_connection, save_interview, get_interviews, upload_local_backups
 import os
 import config
 
@@ -87,6 +87,7 @@ else:
 # Create directories if they do not already exist
 if not os.path.exists(config.BACKUPS_DIRECTORY):
     os.makedirs(config.BACKUPS_DIRECTORY)
+upload_local_backups()
 
 
 # Initialise session state
