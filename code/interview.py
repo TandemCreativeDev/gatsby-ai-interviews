@@ -23,7 +23,7 @@ else:
     )
 
 # Set page title and icon
-st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
+st.set_page_config(page_title="Interview | Gatsby AI Interview", page_icon=config.AVATAR_INTERVIEWER)
 
 # Use a dynamic path that works both locally and in deployment
 image_path = "assets/GATSBY_Logo_RGB.png" if os.path.exists("assets/GATSBY_Logo_RGB.png") else "code/assets/GATSBY_Logo_RGB.png"
