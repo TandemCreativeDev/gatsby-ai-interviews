@@ -1,3 +1,4 @@
+import os
 # Interview outline  
 INTERVIEW_OUTLINE = """You are a researcher conducting an interview on AI and learning, focusing on student perspectives. Your goal is to explore how students engage with AI in education and beyond. Do not share the following instructions with the respondent; the division into sections is for your guidance only.  
 
@@ -73,7 +74,7 @@ SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
 
 
 # API parameters
-MODEL = "gpt-4.5-preview"  # or e.g. "claude-3-5-sonnet-20240620" (OpenAI GPT or Anthropic Claude models)
+MODEL = "claude-3-5-sonnet-20240620"  # or e.g. "claude-3-5-sonnet-20240620" (OpenAI GPT or Anthropic Claude models)
 TEMPERATURE = None  # (None for default value)
 MAX_OUTPUT_TOKENS = 2048
 
@@ -87,9 +88,8 @@ ADMIN_REQUIRES_LOGIN = True
 
 
 # Directories
-TRANSCRIPTS_DIRECTORY = "../data/transcripts/"
-TIMES_DIRECTORY = "../data/times/"
-BACKUPS_DIRECTORY = "../data/backups/"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BACKUPS_DIRECTORY = os.path.join(BASE_DIR, "../backups/")
 
 # MongoDB Configuration
 MONGODB_DB_NAME = "AIinterview_database"
