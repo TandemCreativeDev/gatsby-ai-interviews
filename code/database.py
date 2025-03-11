@@ -68,9 +68,9 @@ def test_connection():
             st.error(error_msg)
     return []
 
-def save_interview(username, transcript, time_data):
+def prepare_mongo_data(username, transcript, time_data, backup=False):
     """
-    Save interview data to MongoDB
+    Prepare data for MongoDB
     
     Args:
         username (str): Username of the interviewee
@@ -78,14 +78,9 @@ def save_interview(username, transcript, time_data):
         time_data (dict): Time-related data for the interview
     
     Returns:
-        bool: True if successful, False otherwise
+        dict: Mongo document
     """
-    try:
-        collection = get_collection()
-        if collection is not None:
-            from pymongo import ReturnDocument
-            # Create document with backup flag set to False (final save)
-            document = {
+    return {
                 "username": username,
                 "transcript": transcript,
                 "time_data": time_data,
@@ -94,13 +89,40 @@ def save_interview(username, transcript, time_data):
                     "version": "1.0",
                     "source": "ai_interview_system"
                 },
-                "backup": False
+                "backup": backup
             }
+
+def save_interview(document):
+    """
+    Save interview data to MongoDB
+    
+    Args:
+        document (dict): Interview data MongoDB document
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        # Convert timestamp from string back to datetime if needed
+        if isinstance(document.get('timestamp'), str):
+            try:
+                document['timestamp'] = datetime.datetime.fromisoformat(document['timestamp'])
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Failed to convert timestamp to datetime: {e}")
+                # If conversion fails, create a new timestamp
+                document['timestamp'] = datetime.datetime.now()
+        elif not isinstance(document.get('timestamp'), datetime.datetime):
+            # If timestamp doesn't exist or isn't a datetime, create one
+            document['timestamp'] = datetime.datetime.now()
+            
+        collection = get_collection()
+        if collection is not None:
+            from pymongo import ReturnDocument
             
             if "mongo_doc_id" in st.session_state:
                 filter_query = {"_id": st.session_state.mongo_doc_id}
             else:
-                filter_query = {"username": username}
+                filter_query = {"username": document['username']}
             
             updated_doc = collection.find_one_and_update(
                 filter_query,
@@ -111,21 +133,21 @@ def save_interview(username, transcript, time_data):
             
             if updated_doc:
                 st.session_state.mongo_doc_id = updated_doc["_id"]
-                logger.info(f"Successfully saved interview data for user: {username}")
+                logger.info(f"Successfully saved interview data for user: {document['username']}")
                 return True
             else:
-                logger.warning(f"Failed to update interview data for user: {username}")
-                _create_backup(username, {"username": username, "transcript": transcript, "time_data": time_data})
+                logger.warning(f"Failed to update interview data for user: {document['username']}")
+                _create_backup(document)
                 return False
         else:
             logger.error("Failed to get MongoDB collection")
-            _create_backup(username, {"username": username, "transcript": transcript, "time_data": time_data})
+            _create_backup(document)
             return False
     except Exception as e:
         error_msg = f"Failed to save interview data: {e}"
         logger.error(error_msg)
         st.error(error_msg)
-        _create_backup(username, {"username": username, "transcript": transcript, "time_data": time_data})
+        _create_backup(document)
         return False
 
 def upload_local_backups():
@@ -140,17 +162,12 @@ def upload_local_backups():
     if not backup_files:
         logger.info("No local backups to upload.")
         return
-    from mongo_utils import save_interview_bulk
     for backup_path in backup_files:
         try:
             with open(backup_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
+                document = json.load(f)
             # Attempt upload using save_interview_bulk
-            success = save_interview_bulk(
-                username=data.get("username", "unknown"),
-                responses={},
-                transcript=data.get("transcript", "")
-            )
+            success = save_interview(document)
             if success:
                 os.remove(backup_path)
                 logger.info(f"Uploaded and deleted backup file: {backup_path}")
@@ -223,20 +240,28 @@ def delete_interview(interview_id):
         logger.error(error_msg)
         return False
 
-def _create_backup(username, data):
-    """Helper function to create JSON backup"""
+def _create_backup(document):
+    """Helper function to create JSON backup with proper datetime handling"""
     try:
         # Make backup directory absolute 
         backup_dir = os.path.abspath(config.BACKUPS_DIRECTORY)
         os.makedirs(backup_dir, exist_ok=True)
         
         # Create unique filename with timestamp
-        filename = f"interview_{username}_{int(time.time())}.json"
+        filename = f"interview_{document['username']}.json"
         backup_path = os.path.join(backup_dir, filename)
         
+        # Create a copy of the document to avoid modifying the original
+        json_document = document.copy()
+        
+        # Convert datetime to string format
+        if isinstance(json_document['timestamp'], datetime.datetime):
+            json_document['timestamp'] = json_document['timestamp'].isoformat()
+        
         # Write data to file
+        json_document['backup'] = True
         with open(backup_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
+            json.dump(json_document, f, indent=4)
         
         print(f"Saved interview data to fallback JSON backup file: {backup_path}")
         return True
@@ -248,9 +273,9 @@ def _create_backup(username, data):
             fallback_dir = "."  # Current directory
             backup_path = os.path.join(fallback_dir, filename)
             with open(backup_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=4)
+                json.dump(json_document, f, indent=4)  # Using the already prepared json_document
             print(f"Saved interview data to current directory: {backup_path}")
             return True
-        except:
-            print("Failed to create backup even in current directory")
+        except Exception as e:
+            print(f"Failed to create backup even in current directory: {e}")
             return False
