@@ -2,6 +2,9 @@ import json
 from openai import OpenAI
 import streamlit as st
 
+with open("data/schema.json", "r") as f:
+    schema = json.load(f)
+
 def generate_transcript_summary(transcript):
     """
     Takes a transcript and sends it to OpenAI's o3-mini model to generate a summary
@@ -31,54 +34,7 @@ def generate_transcript_summary(transcript):
         if use_mock_data:
             # Return mock data for testing without API
             print("Using mock data instead of calling API")
-            mock_summary = {
-                "responses": {
-                    "about_user": {
-                        "age": "22",
-                        "gender": "Female",
-                        "study_field": "Computer Science",
-                        "career_aspiration": "Software Development (AI Applications)"
-                    },
-                    "ai_in_learning": {
-                        "uses_ai": True,
-                        "ai_usage": ["Explaining programming concepts", "Coding assistance", "Research paper summarization"],
-                        "effective_aspects": "Debugging code, explaining complex concepts in different ways",
-                        "ineffective_aspects": "Sometimes provides incorrect code solutions, oversimplifies complex topics",
-                        "teacher_opinion": "Mixed - some support while others have concerns about academic integrity"
-                    },
-                    "ai_outside_learning": {
-                        "uses_ai": True,
-                        "ai_usage": [],
-                        "comparison_to_learning": ""
-                    },
-                    "ai_in_teaching": {
-                        "lesson_planning": "",
-                        "feedback_marking": "",
-                        "resource_creation": ""
-                    },
-                    "concerns_about_ai": {
-                        "education": "",
-                        "society": "",
-                        "workplace": ""
-                    },
-                    "future_with_ai": {
-                        "career_importance": "",
-                        "preparedness": "",
-                        "skills_to_develop": []
-                    },
-                    "ai_vs_past_generations": {
-                        "education": "",
-                        "work": "",
-                        "daily_life": ""
-                    }
-                },
-                "sentiment_analysis": {
-                    "overall": "Positive",
-                    "education": "Neutral",
-                    "workplace": "Positive",
-                    "society": "Not mentioned"
-                }
-            }
+            mock_summary = schema
             return mock_summary
             
         # Initialize API client
@@ -93,54 +49,7 @@ def generate_transcript_summary(transcript):
         Please analyze the following interview transcript and create a summary using this exact JSON schema format:
         
         ```json
-        {{
-          "responses": {{
-            "about_user": {{
-              "age": "",
-              "gender": "",
-              "study_field": "",
-              "career_aspiration": ""
-            }},
-            "ai_in_learning": {{
-              "uses_ai": true,
-              "ai_usage": [],
-              "effective_aspects": "",
-              "ineffective_aspects": "",
-              "teacher_opinion": ""
-            }},
-            "ai_outside_learning": {{
-              "uses_ai": true,
-              "ai_usage": [],
-              "comparison_to_learning": ""
-            }},
-            "ai_in_teaching": {{
-              "lesson_planning": "",
-              "feedback_marking": "",
-              "resource_creation": ""
-            }},
-            "concerns_about_ai": {{
-              "education": "",
-              "society": "",
-              "workplace": ""
-            }},
-            "future_with_ai": {{
-              "career_importance": "",
-              "preparedness": "",
-              "skills_to_develop": []
-            }},
-            "ai_vs_past_generations": {{
-              "education": "",
-              "work": "",
-              "daily_life": ""
-            }}
-          }},
-          "sentiment_analysis": {{
-            "overall": "",
-            "education": "",
-            "workplace": "",
-            "society": ""
-          }}
-        }}
+        {schema}
         ```
         
         Here is the transcript to analyze:
@@ -169,6 +78,7 @@ def generate_transcript_summary(transcript):
         
         # Parse the response as JSON
         summary_json = json.loads(result)
+        summary_json["full_transcript"] = transcript
         
         # Print the summary to console for debugging
         print("Transcript Summary:")
