@@ -1,12 +1,11 @@
 
 import streamlit as st
 import time
+from mongo_utils import save_interview_bulk
 from utils import (
     check_password,
-    check_if_interview_completed,
-    save_interview_data,
 )
-from database import test_connection, save_interview
+from database import prepare_mongo_data, save_interview, test_connection, upload_local_backups
 import os
 import config
 
@@ -24,7 +23,7 @@ else:
     )
 
 # Set page title and icon
-st.set_page_config(page_title="Interview", page_icon=config.AVATAR_INTERVIEWER)
+st.set_page_config(page_title="Interview | Gatsby AI Interview", page_icon=config.AVATAR_INTERVIEWER)
 
 # Use a dynamic path that works both locally and in deployment
 image_path = "assets/GATSBY_Logo_RGB.png" if os.path.exists("assets/GATSBY_Logo_RGB.png") else "code/assets/GATSBY_Logo_RGB.png"
@@ -33,49 +32,6 @@ col1, col2, col3 = st.sidebar.columns([1, 2, 1])
 with col2:
     # Display smaller centered image without pixelation by retaining aspect ratio
     st.image(image_path, use_container_width=True)
-
-
-# Test MongoDB connection (temporary for verification)
-if st.sidebar.checkbox("Test MongoDB Connection", False):
-    collections = test_connection()
-    if collections:
-        st.sidebar.success("Successfully connected to MongoDB!")
-        st.sidebar.write("Collections in the database:")
-        st.sidebar.write(collections)
-    else:
-        st.sidebar.error("Failed to connect to MongoDB. Please check your connection string in .streamlit/secrets.toml")
-
-# Import mongo_utils for saving interview data
-from mongo_utils import save_interview_bulk
-
-# Test saving interview data to MongoDB
-if st.sidebar.checkbox("Test Save to MongoDB", False):
-    if st.sidebar.button("Save Test Data"):
-        # Create sample data
-        test_username = f"test_user_{int(time.time())}"
-        test_responses = {
-            "about_user": {
-                "age": "18-24",
-                "gender": "prefer not to say",
-                "education": "undergraduate"
-            }
-        }
-        test_transcript = "Sample interview transcript for testing MongoDB integration."
-        
-        # Save to MongoDB
-        with st.sidebar.status("Saving to MongoDB...") as status:
-            success = save_interview_bulk(
-                username=test_username,
-                responses=test_responses,
-                transcript=test_transcript
-            )
-            
-            if success:
-                status.update(label="✅ Save successful!", state="complete")
-                st.sidebar.success(f"Successfully saved test data for user: {test_username}")
-            else:
-                status.update(label="❌ Save failed after retries", state="error")
-                st.sidebar.error("Failed to save test data to MongoDB after multiple attempts")
 
 # Check if usernames and logins are enabled
 if config.LOGINS:
@@ -86,15 +42,12 @@ if config.LOGINS:
     else:
         st.session_state.username = username
 else:
-    st.session_state.username = "testaccount"
+    st.session_state.username = "user"
 
 # Create directories if they do not already exist
-if not os.path.exists(config.TRANSCRIPTS_DIRECTORY):
-    os.makedirs(config.TRANSCRIPTS_DIRECTORY)
-if not os.path.exists(config.TIMES_DIRECTORY):
-    os.makedirs(config.TIMES_DIRECTORY)
 if not os.path.exists(config.BACKUPS_DIRECTORY):
     os.makedirs(config.BACKUPS_DIRECTORY)
+upload_local_backups()
 
 
 # Initialise session state
@@ -112,17 +65,16 @@ if "start_time" not in st.session_state:
         "%Y_%m_%d_%H_%M_%S", time.localtime(st.session_state.start_time)
     )
 
-# Check if interview previously completed
-interview_previously_completed = check_if_interview_completed(
-    config.TIMES_DIRECTORY, st.session_state.username
-)
+# # Check if interview previously completed by querying the database
+# interviews = get_interviews(username=st.session_state.username)
+# interview_previously_completed = len(interviews) > 0
 
-# If app started but interview was previously completed
-if interview_previously_completed and not st.session_state.messages:
+# # If app started but interview was previously completed
+# if interview_previously_completed and not st.session_state.messages:
 
-    st.session_state.interview_active = False
-    completed_message = "Interview already completed."
-    st.markdown(completed_message)
+#     st.session_state.interview_active = False
+#     completed_message = "Interview already completed."
+#     st.markdown(completed_message)
 
 # Add 'Quit' button to dashboard
 col1, col2 = st.columns([0.85, 0.15])
@@ -142,12 +94,6 @@ with col2:
         # Use timestamped username to avoid overwriting previous interviews
         timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
         
-        # Save to file system
-        save_interview_data(
-            timestamped_username,
-            config.TRANSCRIPTS_DIRECTORY,
-            config.TIMES_DIRECTORY,
-        )
         
         # Save to MongoDB
         try:
@@ -161,11 +107,18 @@ with col2:
             }
             
             # Save to MongoDB
-            save_interview(
+            document = prepare_mongo_data(
                 username=timestamped_username,
                 transcript=transcript,
                 time_data=time_data
             )
+            save_interview(document)
+            # If MongoDB connection is restored, delete backup file
+            if test_connection():
+                backup_file = os.path.join(config.BACKUPS_DIRECTORY, f"{timestamped_username}.json")
+                if os.path.exists(backup_file):
+                    os.remove(backup_file)
+                    st.sidebar.info("Backup deleted after successful MongoDB save.")
         except Exception as e:
             st.sidebar.error(f"Failed to save to MongoDB: {e}")
 
@@ -243,14 +196,6 @@ if not st.session_state.messages:
         {"role": "assistant", "content": message_interviewer}
     )
 
-    # Store first backup files to record who started the interview
-    save_interview_data(
-        username=st.session_state.username,
-        transcripts_directory=config.BACKUPS_DIRECTORY,
-        times_directory=config.BACKUPS_DIRECTORY,
-        file_name_addition_transcript=f"_transcript_started_{st.session_state.start_time_file_names}",
-        file_name_addition_time=f"_time_started_{st.session_state.start_time_file_names}",
-    )
 
 
 # Main chat if interview is active
@@ -337,39 +282,22 @@ if st.session_state.interview_active:
                     {"role": "assistant", "content": message_interviewer}
                 )
 
-                # Regularly store interview progress as backup, but prevent script from
-                # stopping in case of a write error
+                # Regularly save interview progress to MongoDB (as backup)
                 try:
-                    # Save to file system
-                    save_interview_data(
-                        username=st.session_state.username,
-                        transcripts_directory=config.BACKUPS_DIRECTORY,
-                        times_directory=config.BACKUPS_DIRECTORY,
-                        file_name_addition_transcript=f"_transcript_started_{st.session_state.start_time_file_names}",
-                        file_name_addition_time=f"_time_started_{st.session_state.start_time_file_names}",
+                    transcript = "\n".join([f"{msg['role']}: {msg['content']}" 
+                                             for msg in st.session_state.messages if msg['role'] != "system"])
+                    time_data = {
+                        "start_time": st.session_state.start_time,
+                        "current_time": time.time(),
+                        "duration_so_far": time.time() - st.session_state.start_time,
+                        "status": "in_progress"
+                    }
+                    document = prepare_mongo_data(
+                        username=f"{st.session_state.username}_backup_{st.session_state.start_time_file_names}",
+                        transcript=transcript,
+                        time_data=time_data
                     )
-                    
-                    # Save to MongoDB (as backup)
-                    try:
-                        # Get transcript and time data
-                        transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != "system"])
-                        time_data = {
-                            "start_time": st.session_state.start_time,
-                            "current_time": time.time(),
-                            "duration_so_far": time.time() - st.session_state.start_time,
-                            "status": "in_progress"
-                        }
-                        
-                        # Save to MongoDB
-                        save_interview(
-                            username=f"{st.session_state.username}_backup_{st.session_state.start_time_file_names}",
-                            transcript=transcript,
-                            time_data=time_data
-                        )
-                    except:
-                        # Silently fail MongoDB backup to not interrupt the interview
-                        pass
-
+                    save_interview(document)
                 except:
                     pass
 
@@ -391,43 +319,25 @@ if st.session_state.interview_active:
                         {"role": "assistant", "content": closing_message}
                     )
 
-                    # Store final transcript and time
-                    final_transcript_stored = False
-                    while final_transcript_stored == False:
-
-                        # Always use timestamped filenames to avoid overwriting previous interviews
-                        timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
-                        
-                        # Save to file system
-                        save_interview_data(
+                    # Store final transcript and time directly to MongoDB
+                    timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
+                    try:
+                        transcript = "\n".join([f"{msg['role']}: {msg['content']}" 
+                                                for msg in st.session_state.messages if msg['role'] != "system"])
+                        time_data = {
+                            "start_time": st.session_state.start_time,
+                            "end_time": time.time(),
+                            "duration": time.time() - st.session_state.start_time
+                        }
+                        document = prepare_mongo_data(
                             username=timestamped_username,
-                            transcripts_directory=config.TRANSCRIPTS_DIRECTORY,
-                            times_directory=config.TIMES_DIRECTORY,
+                            transcript=transcript,
+                            time_data=time_data
                         )
-                        
-                        # Save to MongoDB
-                        try:
-                            # Get transcript and time data
-                            transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != "system"])
-                            time_data = {
-                                "start_time": st.session_state.start_time,
-                                "end_time": time.time(),
-                                "duration": time.time() - st.session_state.start_time
-                            }
-                            
-                            # Save to MongoDB
-                            mongo_saved = save_interview(
-                                username=timestamped_username,
-                                transcript=transcript,
-                                time_data=time_data
-                            )
-                            
-                            if mongo_saved:
-                                st.sidebar.success("Interview saved to MongoDB")
-                        except Exception as e:
-                            st.sidebar.error(f"Failed to save to MongoDB: {e}")
-
-                        final_transcript_stored = check_if_interview_completed(
-                            config.TRANSCRIPTS_DIRECTORY, timestamped_username
-                        )
-                        time.sleep(0.1)
+                        success = save_interview(document)
+                        if success:
+                            st.sidebar.success("✅ Interview saved successful!")
+                        else:
+                            st.sidebar.error("❌ Interview save failed: temporary backup saved locally")
+                    except Exception as e:
+                        st.sidebar.error(f"Failed to save to MongoDB: {e}")
