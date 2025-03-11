@@ -5,7 +5,7 @@ from mongo_utils import save_interview_bulk
 from utils import (
     check_password,
 )
-from database import test_connection, save_interview, get_interviews, upload_local_backups
+from database import prepare_mongo_data, test_connection, save_interview, get_interviews, upload_local_backups
 import os
 import config
 
@@ -147,11 +147,12 @@ with col2:
             }
             
             # Save to MongoDB
-            save_interview(
+            document = prepare_mongo_data(
                 username=timestamped_username,
                 transcript=transcript,
                 time_data=time_data
             )
+            save_interview(document)
             # If MongoDB connection is restored, delete backup file
             if test_connection():
                 backup_file = os.path.join(config.BACKUPS_DIRECTORY, f"{timestamped_username}.json")
@@ -331,11 +332,12 @@ if st.session_state.interview_active:
                         "duration_so_far": time.time() - st.session_state.start_time,
                         "status": "in_progress"
                     }
-                    save_interview(
+                    document = prepare_mongo_data(
                         username=f"{st.session_state.username}_backup_{st.session_state.start_time_file_names}",
                         transcript=transcript,
                         time_data=time_data
                     )
+                    save_interview(document)
                 except:
                     pass
 
@@ -367,11 +369,13 @@ if st.session_state.interview_active:
                             "end_time": time.time(),
                             "duration": time.time() - st.session_state.start_time
                         }
-                        if save_interview(
+                        document = prepare_mongo_data(
                             username=timestamped_username,
                             transcript=transcript,
                             time_data=time_data
-                        ):
+                        )
+                        success = save_interview(document)
+                        if success:
                             st.sidebar.success("✅ Interview saved successful!")
                         else:
                             st.sidebar.error("❌ Interview save failed: temporary backup saved locally")
