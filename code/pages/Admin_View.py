@@ -123,9 +123,26 @@ def render_interviews():
                 for interview in interviews:
                     with st.expander(f"Interview with {interview.get('username', 'Unknown')} - {interview.get('timestamp', 'N/A')}", expanded=True):
                         st.text_area("Transcript", interview.get("transcript", ""), height=200)
-                        for key, label in [("age_range", "Age Range"), ("gender", "Gender"), ("school", "School"),
-                                           ("start_time", "Start Time"), ("end_time", "End Time"), ("completed", "Completed")]:
+                        for key, label in [("age_range", "Age Range"), ("gender", "Gender"), ("school", "School")]:
                             safe_render_field(interview, key, label, "text")
+                        # Render formatted time and completion status
+                        start_time = interview.get("start_time")
+                        end_time = interview.get("end_time")
+                        if start_time and end_time:
+                            try:
+                                from datetime import datetime
+                                st_date = datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%SZ")
+                                date_str = st_date.strftime("%d %b %Y")
+                                end_date = datetime.strptime(end_time, "%Y-%m-%dT%H:%M:%SZ")
+                                duration = end_date - st_date
+                                st.write(f"Date: {date_str}")
+                                st.write(f"Duration: {duration}")
+                            except Exception as e:
+                                st.error(f"Error parsing time fields: {e}")
+                        completed = interview.get("completed")
+                        if completed is not None:
+                            tick = "✓" if completed else "✗"
+                            st.write(f"Completed: {tick}")
                         responses = interview.get("responses")
                         if responses and isinstance(responses, dict):
                             st.markdown("**Responses:**")
