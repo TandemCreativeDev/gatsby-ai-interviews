@@ -98,22 +98,28 @@ def render_interviews():
                     except Exception as e:
                         st.error(f"Error rendering {label}: {e}")
                 for interview in interviews:
-                    st.subheader(f"Interview with {interview.get('username', 'Unknown')}")
-                    st.write(f"Timestamp: {interview.get('timestamp', 'N/A')}")
-                    st.text_area("Transcript", interview.get("transcript", ""), height=200)
-                    # Display additional fields using safe rendering helper function
-                    for key, label in [("age_range", "Age Range"), ("gender", "Gender"), ("school", "School"),
-                                       ("start_time", "Start Time"), ("end_time", "End Time"), ("completed", "Completed")]:
-                        safe_render_field(interview, key, label, "text")
-                    for key, label in [("responses", "Responses"), ("sentiment_analysis", "Sentiment Analysis")]:
-                        safe_render_field(interview, key, label, "json")
-                    st.button("Delete", key=str(interview.get('_id')), on_click=delete_and_refresh, args=(interview.get('_id'),))
-                    st.download_button(
-                        label="Download Transcript",
-                        data=interview.get("transcript", ""),
-                        file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
-                        mime="text/plain"
-                    )
+                    with st.expander(f"Interview with {interview.get('username', 'Unknown')} - {interview.get('timestamp', 'N/A')}", expanded=True):
+                        st.text_area("Transcript", interview.get("transcript", ""), height=200)
+                        for key, label in [("age_range", "Age Range"), ("gender", "Gender"), ("school", "School"),
+                                           ("start_time", "Start Time"), ("end_time", "End Time"), ("completed", "Completed")]:
+                            safe_render_field(interview, key, label, "text")
+                        responses = interview.get("responses")
+                        if responses:
+                            st.markdown("**Responses:**")
+                            for section, content in responses.items():
+                                st.markdown(f"* **{section.replace('_', ' ').title()}:** {content}")
+                        sentiments = interview.get("sentiment_analysis")
+                        if sentiments:
+                            st.markdown("**Sentiment Analysis:**")
+                            for section, content in sentiments.items():
+                                st.markdown(f"* **{section.replace('_', ' ').title()}:** {content}")
+                        st.button("Delete", key=f"delete-{interview.get('_id')}", on_click=delete_and_refresh, args=(interview.get('_id'),))
+                        st.download_button(
+                            label="Download Transcript",
+                            data=interview.get("transcript", ""),
+                            file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
+                            mime="text/plain"
+                        )
             else:
                 st.info("No interview responses found in the database.")
         except Exception as e:
