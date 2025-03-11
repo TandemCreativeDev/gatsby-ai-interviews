@@ -1,7 +1,6 @@
 
 import streamlit as st
 import time
-from mongo_utils import save_interview_bulk
 from utils import (
     check_password,
 )
