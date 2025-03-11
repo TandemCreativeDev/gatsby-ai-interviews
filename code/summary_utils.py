@@ -78,7 +78,6 @@ def generate_transcript_summary(transcript):
         
         # Parse the response as JSON
         summary_json = json.loads(result)
-        summary_json["full_transcript"] = transcript
         
         # Print the summary to console for debugging
         print("Transcript Summary:")
