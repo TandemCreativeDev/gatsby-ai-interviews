@@ -126,31 +126,31 @@ def render_interviews():
                         st.error(f"Error rendering {label}: {e}")
                 for interview in interviews:
                     with st.expander(f"Interview with {interview.get('username', 'Unknown')} - {interview.get('timestamp', 'N/A')}", expanded=True):
-                        for key, label in [("school", "School")]:
-                            safe_render_field(interview, key, label, "text")
-                        # Render formatted time and completion status using time_data
-                        time_data = interview.get("time_data")
-                        if time_data and isinstance(time_data, dict):
-                            try:
-                                from datetime import datetime, timedelta
-                                st_ts = time_data.get("start_time")
-                                curr_ts = time_data.get("current_time")
-                                if st_ts:
-                                    st_date = datetime.fromtimestamp(st_ts)
-                                    date_str = st_date.strftime("%d %b %Y")
-                                    st.write(f"Date: {date_str}")
-                                if st_ts and curr_ts:
-                                    duration_val = time_data.get("duration_so_far")
-                                    if duration_val is None:
-                                        duration_val = curr_ts - st_ts
-                                    duration_formatted = str(timedelta(seconds=duration_val)).split(".")[0]
-                                    st.write(f"Duration: {duration_formatted}")
-                            except Exception as e:
-                                st.error(f"Error parsing time data: {e}")
-                        completed = interview.get("completed")
-                        if completed is not None:
-                            tick = "✓" if completed else "✗"
-                            st.write(f"Completed: {tick}")
+                        with st.container():
+                            st.markdown("#### Interview Details")
+                            safe_render_field(interview, "school", "School", "text")
+                            time_data = interview.get("time_data")
+                            if time_data and isinstance(time_data, dict):
+                                try:
+                                    from datetime import datetime, timedelta
+                                    st_ts = time_data.get("start_time")
+                                    curr_ts = time_data.get("current_time")
+                                    if st_ts:
+                                        st_date = datetime.fromtimestamp(st_ts)
+                                        date_str = st_date.strftime("%d %b %Y")
+                                        st.write(f"Date: {date_str}")
+                                    if st_ts and curr_ts:
+                                        duration_val = time_data.get("duration_so_far")
+                                        if duration_val is None:
+                                            duration_val = curr_ts - st_ts
+                                        duration_formatted = str(timedelta(seconds=duration_val)).split(".")[0]
+                                        st.write(f"Duration: {duration_formatted}")
+                                except Exception as e:
+                                    st.error(f"Error parsing time data: {e}")
+                            completed = interview.get("completed")
+                            if completed is not None:
+                                tick = "✓" if completed else "✗"
+                                st.write(f"Completed: {tick}")
                         responses = interview.get("responses")
                         if responses and isinstance(responses, dict):
                             st.markdown("**Responses:**")
