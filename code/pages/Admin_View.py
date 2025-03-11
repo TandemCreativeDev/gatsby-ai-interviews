@@ -123,7 +123,7 @@ def render_interviews():
                 for interview in interviews:
                     with st.expander(f"Interview with {interview.get('username', 'Unknown')} - {interview.get('timestamp', 'N/A')}", expanded=True):
                         st.text_area("Transcript", interview.get("transcript", ""), height=200)
-                        for key, label in [("age_range", "Age Range"), ("gender", "Gender"), ("school", "School")]:
+                        for key, label in [("school", "School")]:
                             safe_render_field(interview, key, label, "text")
                         # Render formatted time and completion status using time_data
                         time_data = interview.get("time_data")
@@ -140,7 +140,7 @@ def render_interviews():
                                     duration_val = time_data.get("duration_so_far")
                                     if duration_val is None:
                                         duration_val = curr_ts - st_ts
-                                    duration_formatted = str(timedelta(seconds=duration_val))
+                                    duration_formatted = str(timedelta(seconds=duration_val)).split(".")[0]
                                     st.write(f"Duration: {duration_formatted}")
                             except Exception as e:
                                 st.error(f"Error parsing time data: {e}")
