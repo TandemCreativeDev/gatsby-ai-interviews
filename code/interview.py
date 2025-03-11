@@ -5,7 +5,7 @@ from mongo_utils import save_interview_bulk
 from utils import (
     check_password,
 )
-from database import prepare_mongo_data, test_connection, save_interview, get_interviews, upload_local_backups
+from database import prepare_mongo_data, save_interview, test_connection, upload_local_backups
 import os
 import config
 
@@ -32,46 +32,6 @@ col1, col2, col3 = st.sidebar.columns([1, 2, 1])
 with col2:
     # Display smaller centered image without pixelation by retaining aspect ratio
     st.image(image_path, use_container_width=True)
-
-
-# Test MongoDB connection (temporary for verification)
-if st.sidebar.checkbox("Test MongoDB Connection", False):
-    collections = test_connection()
-    if collections:
-        st.sidebar.success("Successfully connected to MongoDB!")
-        st.sidebar.write("Collections in the database:")
-        st.sidebar.write(collections)
-    else:
-        st.sidebar.error("Failed to connect to MongoDB. Please check your connection string in .streamlit/secrets.toml")
-
-# Test saving interview data to MongoDB
-if st.sidebar.checkbox("Test Save to MongoDB", False):
-    if st.sidebar.button("Save Test Data"):
-        # Create sample data
-        test_username = f"test_user_{int(time.time())}"
-        test_responses = {
-            "about_user": {
-                "age": "18-24",
-                "gender": "prefer not to say",
-                "education": "undergraduate"
-            }
-        }
-        test_transcript = "Sample interview transcript for testing MongoDB integration."
-        
-        # Save to MongoDB
-        with st.sidebar.status("Saving to MongoDB...") as status:
-            success = save_interview_bulk(
-                username=test_username,
-                responses=test_responses,
-                transcript=test_transcript
-            )
-            
-            if success:
-                status.update(label="✅ Save successful!", state="complete")
-                st.sidebar.success(f"Successfully saved test data for user: {test_username}")
-            else:
-                status.update(label="❌ Save failed after retries", state="error")
-                st.sidebar.error("Failed to save test data to MongoDB after multiple attempts")
 
 # Check if usernames and logins are enabled
 if config.LOGINS:
