@@ -125,20 +125,25 @@ def render_interviews():
                         st.text_area("Transcript", interview.get("transcript", ""), height=200)
                         for key, label in [("age_range", "Age Range"), ("gender", "Gender"), ("school", "School")]:
                             safe_render_field(interview, key, label, "text")
-                        # Render formatted time and completion status
-                        start_time = interview.get("start_time")
-                        end_time = interview.get("end_time")
-                        if start_time and end_time:
+                        # Render formatted time and completion status using time_data
+                        time_data = interview.get("time_data")
+                        if time_data and isinstance(time_data, dict):
                             try:
-                                from datetime import datetime
-                                st_date = datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%SZ")
-                                date_str = st_date.strftime("%d %b %Y")
-                                end_date = datetime.strptime(end_time, "%Y-%m-%dT%H:%M:%SZ")
-                                duration = end_date - st_date
-                                st.write(f"Date: {date_str}")
-                                st.write(f"Duration: {duration}")
+                                from datetime import datetime, timedelta
+                                st_ts = time_data.get("start_time")
+                                curr_ts = time_data.get("current_time")
+                                if st_ts:
+                                    st_date = datetime.fromtimestamp(st_ts)
+                                    date_str = st_date.strftime("%d %b %Y")
+                                    st.write(f"Date: {date_str}")
+                                if st_ts and curr_ts:
+                                    duration_val = time_data.get("duration_so_far")
+                                    if duration_val is None:
+                                        duration_val = curr_ts - st_ts
+                                    duration_formatted = str(timedelta(seconds=duration_val))
+                                    st.write(f"Duration: {duration_formatted}")
                             except Exception as e:
-                                st.error(f"Error parsing time fields: {e}")
+                                st.error(f"Error parsing time data: {e}")
                         completed = interview.get("completed")
                         if completed is not None:
                             tick = "✓" if completed else "✗"
