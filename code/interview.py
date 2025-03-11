@@ -89,10 +89,6 @@ else:
     st.session_state.username = "user"
 
 # Create directories if they do not already exist
-if not os.path.exists(config.TRANSCRIPTS_DIRECTORY):
-    os.makedirs(config.TRANSCRIPTS_DIRECTORY)
-if not os.path.exists(config.TIMES_DIRECTORY):
-    os.makedirs(config.TIMES_DIRECTORY)
 if not os.path.exists(config.BACKUPS_DIRECTORY):
     os.makedirs(config.BACKUPS_DIRECTORY)
 
@@ -142,11 +138,11 @@ with col2:
         # Use timestamped username to avoid overwriting previous interviews
         timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
         
-        # Save to file system
+        # Save backup to file system
         save_interview_data(
             timestamped_username,
-            config.TRANSCRIPTS_DIRECTORY,
-            config.TIMES_DIRECTORY,
+            config.BACKUPS_DIRECTORY,
+            config.BACKUPS_DIRECTORY,
         )
         
         # Save to MongoDB
@@ -166,6 +162,12 @@ with col2:
                 transcript=transcript,
                 time_data=time_data
             )
+            # If MongoDB connection is restored, delete backup file
+            if test_connection():
+                backup_file = os.path.join(config.BACKUPS_DIRECTORY, f"{timestamped_username}.json")
+                if os.path.exists(backup_file):
+                    os.remove(backup_file)
+                    st.sidebar.info("Backup deleted after successful MongoDB save.")
         except Exception as e:
             st.sidebar.error(f"Failed to save to MongoDB: {e}")
 
@@ -398,11 +400,11 @@ if st.session_state.interview_active:
                         # Always use timestamped filenames to avoid overwriting previous interviews
                         timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
                         
-                        # Save to file system
+                        # Save backup to file system
                         save_interview_data(
                             username=timestamped_username,
-                            transcripts_directory=config.TRANSCRIPTS_DIRECTORY,
-                            times_directory=config.TIMES_DIRECTORY,
+                            transcripts_directory=config.BACKUPS_DIRECTORY,
+                            times_directory=config.BACKUPS_DIRECTORY,
                         )
                         
                         # Save to MongoDB
@@ -424,10 +426,16 @@ if st.session_state.interview_active:
                             
                             if mongo_saved:
                                 st.sidebar.success("Interview saved to MongoDB")
+                                # If MongoDB connection is restored, delete backup file
+                                if test_connection():
+                                    backup_file = os.path.join(config.BACKUPS_DIRECTORY, f"{timestamped_username}.json")
+                                    if os.path.exists(backup_file):
+                                        os.remove(backup_file)
+                                        st.sidebar.info("Backup deleted after successful MongoDB save.")
                         except Exception as e:
                             st.sidebar.error(f"Failed to save to MongoDB: {e}")
 
                         final_transcript_stored = check_if_interview_completed(
-                            config.TRANSCRIPTS_DIRECTORY, timestamped_username
+                            config.BACKUPS_DIRECTORY, timestamped_username
                         )
                         time.sleep(0.1)
