@@ -151,15 +151,19 @@ def render_interviews():
                             if completed is not None:
                                 tick = "✓" if completed else "✗"
                                 st.write(f"Completed: {tick}")
-                        responses = interview.get("responses")
-                        if responses and isinstance(responses, dict):
-                            st.markdown("**Responses:**")
-                            st.markdown(render_dict_as_bullets(responses))
-                        sentiments = interview.get("sentiment_analysis")
-                        if sentiments and isinstance(sentiments, dict):
-                            st.markdown("**Sentiment Analysis:**")
-                            st.markdown(render_dict_as_bullets(sentiments))
-                        st.text_area("Transcript", interview.get("transcript", ""), height=200)
+                        with st.container():
+                            st.markdown("#### Responses")
+                            responses = interview.get("responses")
+                            if responses and isinstance(responses, dict):
+                                st.markdown(render_dict_as_bullets(responses))
+                        with st.container():
+                            st.markdown("#### Sentiment Analysis")
+                            sentiments = interview.get("sentiment_analysis")
+                            if sentiments and isinstance(sentiments, dict):
+                                st.markdown(render_dict_as_bullets(sentiments))
+                        with st.container():
+                            st.markdown("#### Transcript")
+                            st.text_area("", interview.get("transcript", ""), height=200)
                         st.button("Delete", key=f"delete-{interview.get('_id')}", on_click=delete_and_refresh, args=(interview.get('_id'),))
                         st.download_button(
                             label="Download Transcript",
