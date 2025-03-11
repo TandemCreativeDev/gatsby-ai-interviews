@@ -73,13 +73,20 @@ def snake_to_title(s):
     return " ".join(word.capitalize() for word in s.split("_"))
 
 def render_dict_as_bullets(d, level=0):
-    """Recursively renders dictionary contents as markdown bullet lists."""
+    """Recursively renders dictionary contents as markdown bullet lists. Supports nested dicts and lists."""
     markdown_str = ""
     indent = "    " * level
     for k, v in d.items():
         title = snake_to_title(k)
         if isinstance(v, dict):
             markdown_str += f"{indent}- **{title}**:\n" + render_dict_as_bullets(v, level+1)
+        elif isinstance(v, list):
+            markdown_str += f"{indent}- **{title}**:\n"
+            for item in v:
+                if isinstance(item, dict):
+                    markdown_str += render_dict_as_bullets(item, level+1)
+                else:
+                    markdown_str += f"{'    '*(level+1)}- {item}\n"
         else:
             markdown_str += f"{indent}- **{title}**: {v}\n"
     return markdown_str
