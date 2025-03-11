@@ -91,23 +91,20 @@ def render_interviews():
                     st.subheader(f"Interview with {interview.get('username', 'Unknown')}")
                     st.write(f"Timestamp: {interview.get('timestamp', 'N/A')}")
                     st.text_area("Transcript", interview.get("transcript", ""), height=200)
-                    # Display additional fields if available from database schema
-                    if interview.get("age_range") is not None:
-                        st.write(f"Age Range: {interview.get('age_range')}")
-                    if interview.get("gender") is not None:
-                        st.write(f"Gender: {interview.get('gender')}")
-                    if interview.get("school") is not None:
-                        st.write(f"School: {interview.get('school')}")
-                    if interview.get("start_time") is not None:
-                        st.write(f"Start Time: {interview.get('start_time')}")
-                    if interview.get("end_time") is not None:
-                        st.write(f"End Time: {interview.get('end_time')}")
-                    if interview.get("completed") is not None:
-                        st.write(f"Completed: {interview.get('completed')}")
-                    if interview.get("responses") is not None:
-                        st.json(interview.get("responses"), label="Responses")
-                    if interview.get("sentiment_analysis") is not None:
-                        st.json(interview.get("sentiment_analysis"), label="Sentiment Analysis")
+                    # Display additional fields if available from database schema with error handling
+                    for key, label in [("age_range", "Age Range"), ("gender", "Gender"), ("school", "School"),
+                                       ("start_time", "Start Time"), ("end_time", "End Time"), ("completed", "Completed")]:
+                        try:
+                            if interview.get(key) is not None:
+                                st.write(f"{label}: {interview.get(key)}")
+                        except Exception as e:
+                            st.error(f"Error rendering {label}: {e}")
+                    for key, label in [("responses", "Responses"), ("sentiment_analysis", "Sentiment Analysis")]:
+                        try:
+                            if interview.get(key) is not None:
+                                st.json(interview.get(key))
+                        except Exception as e:
+                            st.error(f"Error rendering {label}: {e}")
                     st.button("Delete", key=str(interview.get('_id')), on_click=delete_and_refresh, args=(interview.get('_id'),))
                     st.download_button(
                         label="Download Transcript",
