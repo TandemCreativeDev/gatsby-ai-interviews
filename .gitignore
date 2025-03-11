@@ -166,7 +166,7 @@ cython_debug/
 
 # streamlit
 secrets.toml
-backup/
+backups/
 
 # skynet
 repomix-output.txt
