@@ -105,16 +105,16 @@ if "start_time" not in st.session_state:
         "%Y_%m_%d_%H_%M_%S", time.localtime(st.session_state.start_time)
     )
 
-# Check if interview previously completed by querying the database
-interviews = get_interviews(username=st.session_state.username)
-interview_previously_completed = len(interviews) > 0
+# # Check if interview previously completed by querying the database
+# interviews = get_interviews(username=st.session_state.username)
+# interview_previously_completed = len(interviews) > 0
 
-# If app started but interview was previously completed
-if interview_previously_completed and not st.session_state.messages:
+# # If app started but interview was previously completed
+# if interview_previously_completed and not st.session_state.messages:
 
-    st.session_state.interview_active = False
-    completed_message = "Interview already completed."
-    st.markdown(completed_message)
+#     st.session_state.interview_active = False
+#     completed_message = "Interview already completed."
+#     st.markdown(completed_message)
 
 # Add 'Quit' button to dashboard
 col1, col2 = st.columns([0.85, 0.15])
