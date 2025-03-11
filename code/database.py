@@ -128,6 +128,37 @@ def save_interview(username, transcript, time_data):
         _create_backup(username, {"username": username, "transcript": transcript, "time_data": time_data})
         return False
 
+def upload_local_backups():
+    """
+    Scan local backup directory for JSON backup files,
+    attempt to upload them to MongoDB using save_interview_bulk,
+    and delete the backup file if the upload is successful.
+    """
+    backup_dir = os.path.abspath(config.BACKUPS_DIRECTORY)
+    import glob
+    backup_files = glob.glob(os.path.join(backup_dir, "*.json"))
+    if not backup_files:
+        logger.info("No local backups to upload.")
+        return
+    from mongo_utils import save_interview_bulk
+    for backup_path in backup_files:
+        try:
+            with open(backup_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            # Attempt upload using save_interview_bulk
+            success = save_interview_bulk(
+                username=data.get("username", "unknown"),
+                responses={},
+                transcript=data.get("transcript", "")
+            )
+            if success:
+                os.remove(backup_path)
+                logger.info(f"Uploaded and deleted backup file: {backup_path}")
+            else:
+                logger.error(f"Failed to upload backup file: {backup_path}")
+        except Exception as e:
+            logger.error(f"Error processing backup file {backup_path}: {e}")
+
 def get_interviews(username=None, limit=100):
     """
     Retrieve interview data from MongoDB
