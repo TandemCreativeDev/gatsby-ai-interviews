@@ -57,7 +57,7 @@ def display_time_info(file_path):
         st.error(f"Error reading time information: {e}")
 
 # Set page title and icon
-st.set_page_config(page_title="Admin View", page_icon="🔒")
+st.set_page_config(page_title="Admin View | Gatsby AI Interview", page_icon="🔒")
 login_placeholder = st.empty()
 
 # Admin login - separate from regular login
