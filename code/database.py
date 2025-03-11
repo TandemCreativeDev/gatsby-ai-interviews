@@ -1,3 +1,6 @@
+import json
+import os
+import time
 import streamlit as st
 from pymongo import MongoClient, ReturnDocument
 import config
@@ -112,14 +115,17 @@ def save_interview(username, transcript, time_data):
                 return True
             else:
                 logger.warning(f"Failed to update interview data for user: {username}")
+                _create_backup(username, {"username": username, "transcript": transcript, "time_data": time_data})
                 return False
         else:
             logger.error("Failed to get MongoDB collection")
+            _create_backup(username, {"username": username, "transcript": transcript, "time_data": time_data})
             return False
     except Exception as e:
         error_msg = f"Failed to save interview data: {e}"
         logger.error(error_msg)
         st.error(error_msg)
+        _create_backup(username, {"username": username, "transcript": transcript, "time_data": time_data})
         return False
 
 def get_interviews(username=None, limit=100):
@@ -185,3 +191,35 @@ def delete_interview(interview_id):
         error_msg = f"Failed to delete interview data: {e}"
         logger.error(error_msg)
         return False
+
+def _create_backup(username, data):
+    """Helper function to create JSON backup"""
+    try:
+        # Make backup directory absolute 
+        backup_dir = os.path.abspath(config.BACKUPS_DIRECTORY)
+        os.makedirs(backup_dir, exist_ok=True)
+        
+        # Create unique filename with timestamp
+        filename = f"interview_{username}_{int(time.time())}.json"
+        backup_path = os.path.join(backup_dir, filename)
+        
+        # Write data to file
+        with open(backup_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+        
+        print(f"Saved interview data to fallback JSON backup file: {backup_path}")
+        return True
+    except Exception as e:
+        print(f"Failed to create backup file: {e}")
+        
+        # Try a fallback location in case the configured directory isn't accessible
+        try:
+            fallback_dir = "."  # Current directory
+            backup_path = os.path.join(fallback_dir, filename)
+            with open(backup_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=4)
+            print(f"Saved interview data to current directory: {backup_path}")
+            return True
+        except:
+            print("Failed to create backup even in current directory")
+            return False
