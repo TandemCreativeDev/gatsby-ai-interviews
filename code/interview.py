@@ -6,7 +6,7 @@ from utils import (
     check_if_interview_completed,
     save_interview_data,
 )
-from database import test_connection, save_interview
+from database import test_connection, save_interview, get_interviews
 import os
 import config
 
@@ -108,10 +108,9 @@ if "start_time" not in st.session_state:
         "%Y_%m_%d_%H_%M_%S", time.localtime(st.session_state.start_time)
     )
 
-# Check if interview previously completed
-interview_previously_completed = check_if_interview_completed(
-    config.TIMES_DIRECTORY, st.session_state.username
-)
+# Check if interview previously completed by querying the database
+interviews = get_interviews(username=st.session_state.username)
+interview_previously_completed = len(interviews) > 0
 
 # If app started but interview was previously completed
 if interview_previously_completed and not st.session_state.messages:
