@@ -87,24 +87,26 @@ def render_interviews():
             from database import get_interviews, delete_interview
             interviews = get_interviews()
             if interviews:
+                def safe_render_field(interview, key, label, render_type="text"):
+                    try:
+                        val = interview.get(key)
+                        if val is not None:
+                            if render_type == "text":
+                                st.write(f"{label}: {val}")
+                            elif render_type == "json":
+                                st.json(val)
+                    except Exception as e:
+                        st.error(f"Error rendering {label}: {e}")
                 for interview in interviews:
                     st.subheader(f"Interview with {interview.get('username', 'Unknown')}")
                     st.write(f"Timestamp: {interview.get('timestamp', 'N/A')}")
                     st.text_area("Transcript", interview.get("transcript", ""), height=200)
-                    # Display additional fields if available from database schema with error handling
+                    # Display additional fields using safe rendering helper function
                     for key, label in [("age_range", "Age Range"), ("gender", "Gender"), ("school", "School"),
                                        ("start_time", "Start Time"), ("end_time", "End Time"), ("completed", "Completed")]:
-                        try:
-                            if interview.get(key) is not None:
-                                st.write(f"{label}: {interview.get(key)}")
-                        except Exception as e:
-                            st.error(f"Error rendering {label}: {e}")
+                        safe_render_field(interview, key, label, "text")
                     for key, label in [("responses", "Responses"), ("sentiment_analysis", "Sentiment Analysis")]:
-                        try:
-                            if interview.get(key) is not None:
-                                st.json(interview.get(key))
-                        except Exception as e:
-                            st.error(f"Error rendering {label}: {e}")
+                        safe_render_field(interview, key, label, "json")
                     st.button("Delete", key=str(interview.get('_id')), on_click=delete_and_refresh, args=(interview.get('_id'),))
                     st.download_button(
                         label="Download Transcript",
