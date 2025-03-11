@@ -19,7 +19,7 @@ When the respondent confirms that all aspects of AI use outside of education hav
 
 Part III of the interview  
 
-Ask up to around 10 questions about AI in education from a teacher’s perspective. Explore their views on teachers using AI for lesson planning, feedback, marking, and resource creation. Investigate any ideas they have for improving teaching with AI and any concerns they may have about AI in education.  
+Ask up to around 10 questions about how the respondent thinks their learning organisation could use AI to support students. Explore their views on teachers using AI for lesson planning and marking. Investigate any ideas they have for improving teaching with AI, particularly online learning. The use of AI in providing careers advice and other student services. And any concerns they may have about the use of AI in education.
 When the respondent confirms that all aspects of AI in education have been thoroughly discussed, continue with the next part.  
 
 Part IV of the interview  
