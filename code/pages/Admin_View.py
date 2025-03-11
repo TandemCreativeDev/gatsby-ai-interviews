@@ -66,7 +66,7 @@ if not admin_login():
 
 # Admin view header
 st.title("Interview Responses Admin View")
-st.write("View completed interview transcripts")
+st.write("View completed interview transcripts and processed data.")
 
 def snake_to_title(s):
     """Convert snake_case to Title Case with spaces."""
@@ -125,9 +125,9 @@ def render_interviews():
                     except Exception as e:
                         st.error(f"Error rendering {label}: {e}")
                 for interview in interviews:
-                    with st.expander(f"Interview with {interview.get('username', 'Unknown')}", expanded=True):
+                    with st.expander(f"## Interview with {interview.get('username', 'Unknown')}", expanded=True):
                         with st.container():
-                            st.markdown("#### Interview Details")
+                            st.markdown("### Interview Details")
                             safe_render_field(interview, "school", "School", "text")
                             time_data = interview.get("time_data")
                             if time_data and isinstance(time_data, dict):
@@ -152,17 +152,17 @@ def render_interviews():
                                 tick = "✓" if completed else "✗"
                                 st.write(f"Completed: {tick}")
                         with st.container():
-                            st.markdown("#### Responses")
                             responses = interview.get("responses")
                             if responses and isinstance(responses, dict):
+                                st.markdown("### Responses")
                                 st.markdown(render_dict_as_bullets(responses))
                         with st.container():
-                            st.markdown("#### Sentiment Analysis")
                             sentiments = interview.get("sentiment_analysis")
                             if sentiments and isinstance(sentiments, dict):
+                                st.markdown("### Sentiment Analysis")
                                 st.markdown(render_dict_as_bullets(sentiments))
                         with st.container():
-                            st.markdown("#### Transcript")
+                            st.markdown("### Transcript")
                             st.text_area("", interview.get("transcript", ""), height=200)
                         st.button("Delete", key=f"delete-{interview.get('_id')}", on_click=delete_and_refresh, args=(interview.get('_id'),))
                         st.download_button(
