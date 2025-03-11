@@ -111,7 +111,7 @@ interview_container = st.container()
 def render_interviews():
     with interview_container:
         try:
-            from database import get_interviews, delete_interview
+            from database import get_interviews
             interviews = get_interviews()
             if interviews:
                 def safe_render_field(interview, key, label, render_type="text"):
@@ -125,7 +125,7 @@ def render_interviews():
                     except Exception as e:
                         st.error(f"Error rendering {label}: {e}")
                 for interview in interviews:
-                    with st.expander(f"Interview with {interview.get('username', 'Unknown')} - {interview.get('timestamp', 'N/A')}", expanded=True):
+                    with st.expander(f"Interview with {interview.get('username', 'Unknown')}", expanded=True):
                         with st.container():
                             st.markdown("#### Interview Details")
                             safe_render_field(interview, "school", "School", "text")
