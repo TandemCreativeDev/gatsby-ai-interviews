@@ -67,7 +67,23 @@ if not admin_login():
 # Admin view header
 st.title("Interview Responses Admin View")
 st.write("View completed interview transcripts")
- 
+
+def snake_to_title(s):
+    """Convert snake_case to Title Case with spaces."""
+    return " ".join(word.capitalize() for word in s.split("_"))
+
+def render_dict_as_bullets(d, level=0):
+    """Recursively renders dictionary contents as markdown bullet lists."""
+    markdown_str = ""
+    indent = "    " * level
+    for k, v in d.items():
+        title = snake_to_title(k)
+        if isinstance(v, dict):
+            markdown_str += f"{indent}- **{title}**:\n" + render_dict_as_bullets(v, level+1)
+        else:
+            markdown_str += f"{indent}- **{title}**: {v}\n"
+    return markdown_str
+
 if "refresh_counter" not in st.session_state:
     st.session_state.refresh_counter = 0
 
@@ -104,15 +120,13 @@ def render_interviews():
                                            ("start_time", "Start Time"), ("end_time", "End Time"), ("completed", "Completed")]:
                             safe_render_field(interview, key, label, "text")
                         responses = interview.get("responses")
-                        if responses:
+                        if responses and isinstance(responses, dict):
                             st.markdown("**Responses:**")
-                            for section, content in responses.items():
-                                st.markdown(f"* **{section.replace('_', ' ').title()}:** {content}")
+                            st.markdown(render_dict_as_bullets(responses))
                         sentiments = interview.get("sentiment_analysis")
-                        if sentiments:
+                        if sentiments and isinstance(sentiments, dict):
                             st.markdown("**Sentiment Analysis:**")
-                            for section, content in sentiments.items():
-                                st.markdown(f"* **{section.replace('_', ' ').title()}:** {content}")
+                            st.markdown(render_dict_as_bullets(sentiments))
                         st.button("Delete", key=f"delete-{interview.get('_id')}", on_click=delete_and_refresh, args=(interview.get('_id'),))
                         st.download_button(
                             label="Download Transcript",
