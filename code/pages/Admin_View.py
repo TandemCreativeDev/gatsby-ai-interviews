@@ -88,7 +88,11 @@ def render_dict_as_bullets(d, level=0):
                 else:
                     markdown_str += f"{'    '*(level+1)}- {item}\n"
         else:
-            markdown_str += f"{indent}- **{title}**: {v}\n"
+            if isinstance(v, bool):
+                tick = "✓" if v else "✗"
+                markdown_str += f"{indent}- **{title}**: {tick}\n"
+            else:
+                markdown_str += f"{indent}- **{title}**: {v}\n"
     return markdown_str
 
 if "refresh_counter" not in st.session_state:
