@@ -164,7 +164,8 @@ def render_interviews():
                         with st.container():
                             st.markdown("### Transcript")
                             st.text_area("", interview.get("transcript", ""), height=200)
-                        st.markdown(" ")
+                        st.write(" ")
+                        st.write(" ")
                         cols = st.columns([1, 1])
                         with cols[0]:
                             st.download_button(
@@ -174,7 +175,10 @@ def render_interviews():
                                 mime="text/plain"
                             )
                         with cols[1]:
-                            st.button("Delete", key=f"delete-{interview.get('_id')}", on_click=delete_and_refresh, args=(interview.get('_id'),))
+                            col1, col2 = st.columns([3, 1])
+                            with col2:  # This pushes the button to the right
+                                st.button("Delete", key=f"delete-{interview.get('_id')}", 
+                                        on_click=delete_and_refresh, args=(interview.get('_id'),))
             else:
                 st.info("No interview responses found in the database.")
         except Exception as e:
