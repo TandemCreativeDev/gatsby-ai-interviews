@@ -43,9 +43,6 @@ if st.sidebar.checkbox("Test MongoDB Connection", False):
     else:
         st.sidebar.error("Failed to connect to MongoDB. Please check your connection string in .streamlit/secrets.toml")
 
-# Import mongo_utils for saving interview data
-from mongo_utils import save_interview_bulk
-
 # Test saving interview data to MongoDB
 if st.sidebar.checkbox("Test Save to MongoDB", False):
     if st.sidebar.button("Save Test Data"):
@@ -368,11 +365,13 @@ if st.session_state.interview_active:
                             "end_time": time.time(),
                             "duration": time.time() - st.session_state.start_time
                         }
-                        save_interview(
+                        if save_interview(
                             username=timestamped_username,
                             transcript=transcript,
                             time_data=time_data
-                        )
-                        st.sidebar.success("Interview saved to MongoDB")
+                        ):
+                            st.sidebar.success("✅ Interview saved successful!")
+                        else:
+                            st.sidebar.error("❌ Interview save failed: temporary backup saved locally")
                     except Exception as e:
                         st.sidebar.error(f"Failed to save to MongoDB: {e}")
