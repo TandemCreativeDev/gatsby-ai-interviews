@@ -126,7 +126,6 @@ def render_interviews():
                         st.error(f"Error rendering {label}: {e}")
                 for interview in interviews:
                     with st.expander(f"Interview with {interview.get('username', 'Unknown')} - {interview.get('timestamp', 'N/A')}", expanded=True):
-                        st.text_area("Transcript", interview.get("transcript", ""), height=200)
                         for key, label in [("school", "School")]:
                             safe_render_field(interview, key, label, "text")
                         # Render formatted time and completion status using time_data
@@ -160,6 +159,7 @@ def render_interviews():
                         if sentiments and isinstance(sentiments, dict):
                             st.markdown("**Sentiment Analysis:**")
                             st.markdown(render_dict_as_bullets(sentiments))
+                        st.text_area("Transcript", interview.get("transcript", ""), height=200)
                         st.button("Delete", key=f"delete-{interview.get('_id')}", on_click=delete_and_refresh, args=(interview.get('_id'),))
                         st.download_button(
                             label="Download Transcript",
