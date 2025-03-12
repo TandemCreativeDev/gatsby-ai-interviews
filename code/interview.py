@@ -96,28 +96,29 @@ with col2:
         
         # Save to MongoDB
         try:
-            # Get transcript and time data
-            transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != "system"])
-            time_data = {
-                "start_time": st.session_state.start_time,
-                "end_time": time.time(),
-                "duration": time.time() - st.session_state.start_time,
-                "status": "quit"
-            }
-            
-            # Save to MongoDB
-            document = prepare_mongo_data(
-                username=timestamped_username,
-                transcript=transcript,
-                time_data=time_data
-            )
-            save_interview(document)
-            # If MongoDB connection is restored, delete backup file
-            if test_connection():
-                backup_file = os.path.join(config.BACKUPS_DIRECTORY, f"{timestamped_username}.json")
-                if os.path.exists(backup_file):
-                    os.remove(backup_file)
-                    st.sidebar.info("Backup deleted after successful MongoDB save.")
+            with st.spinner("Saving interview data. Please wait and do not close this page..."):
+                # Get transcript and time data
+                transcript = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != "system"])
+                time_data = {
+                    "start_time": st.session_state.start_time,
+                    "end_time": time.time(),
+                    "duration": time.time() - st.session_state.start_time,
+                    "status": "quit"
+                }
+                
+                # Save to MongoDB
+                document = prepare_mongo_data(
+                    username=timestamped_username,
+                    transcript=transcript,
+                    time_data=time_data
+                )
+                save_interview(document)
+                # If MongoDB connection is restored, delete backup file
+                if test_connection():
+                    backup_file = os.path.join(config.BACKUPS_DIRECTORY, f"{timestamped_username}.json")
+                    if os.path.exists(backup_file):
+                        os.remove(backup_file)
+                        st.sidebar.info("Backup deleted after successful MongoDB save.")
         except Exception as e:
             st.sidebar.error(f"Failed to save to MongoDB: {e}")
 
@@ -322,22 +323,23 @@ if st.session_state.interview_active:
                     # Store final transcript and time directly to MongoDB
                     timestamped_username = f"{st.session_state.username}_{st.session_state.start_time_file_names}"
                     try:
-                        transcript = "\n".join([f"{msg['role']}: {msg['content']}" 
+                        with st.spinner("Saving interview data. Please wait and do not close this page..."):
+                            transcript = "\n".join([f"{msg['role']}: {msg['content']}" 
                                                 for msg in st.session_state.messages if msg['role'] != "system"])
-                        time_data = {
-                            "start_time": st.session_state.start_time,
-                            "end_time": time.time(),
-                            "duration": time.time() - st.session_state.start_time
-                        }
-                        document = prepare_mongo_data(
-                            username=timestamped_username,
-                            transcript=transcript,
-                            time_data=time_data
-                        )
-                        success = save_interview(document)
-                        if success:
-                            st.success("✅ Interview saved successfully!")
-                        else:
-                            st.error("❌ Interview save failed: temporary backup saved locally")
+                            time_data = {
+                                "start_time": st.session_state.start_time,
+                                "end_time": time.time(),
+                                "duration": time.time() - st.session_state.start_time
+                            }
+                            document = prepare_mongo_data(
+                                username=timestamped_username,
+                                transcript=transcript,
+                                time_data=time_data
+                            )
+                            success = save_interview(document)
+                            if success:
+                                st.success("✅ Interview saved successfully!")
+                            else:
+                                st.error("❌ Interview save failed: temporary backup saved locally")
                     except Exception as e:
                         st.sidebar.error(f"Failed to save to MongoDB: {e}")
