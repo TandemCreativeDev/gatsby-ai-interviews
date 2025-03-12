@@ -1,7 +1,6 @@
 
 import streamlit as st
 import time
-from mongo_utils import save_interview_bulk
 from utils import (
     check_password,
 )
@@ -295,7 +294,8 @@ if st.session_state.interview_active:
                     document = prepare_mongo_data(
                         username=f"{st.session_state.username}_backup_{st.session_state.start_time_file_names}",
                         transcript=transcript,
-                        time_data=time_data
+                        time_data=time_data,
+                        backup=True
                     )
                     save_interview(document)
                 except:

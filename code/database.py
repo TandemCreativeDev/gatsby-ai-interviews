@@ -7,6 +7,8 @@ import config
 import datetime
 import logging
 
+from summary_utils import generate_transcript_summary
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -80,7 +82,7 @@ def prepare_mongo_data(username, transcript, time_data, backup=False):
     Returns:
         dict: Mongo document
     """
-    return {
+    document = {
                 "username": username,
                 "transcript": transcript,
                 "time_data": time_data,
@@ -91,6 +93,9 @@ def prepare_mongo_data(username, transcript, time_data, backup=False):
                 },
                 "backup": backup
             }
+    if not backup: 
+        document.update(generate_transcript_summary(transcript))
+    return document
 
 def save_interview(document):
     """
