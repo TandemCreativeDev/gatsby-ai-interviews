@@ -131,7 +131,7 @@ for message in st.session_state.messages[1:]:
         avatar = config.AVATAR_RESPONDENT
     # Only display messages without codes
     all_codes = list(config.CLOSING_MESSAGES.keys()) + list(config.PART_CODES.keys())
-    if not any(code in message["content"] for code in all_codes):
+    if not message.get("invisible", False) and not any(code in message["content"] for code in all_codes):
         with st.chat_message(message["role"], avatar=avatar):
             st.markdown(message["content"])
 
@@ -279,12 +279,12 @@ if st.session_state.interview_active:
             ):
                 matching_code = next((code for code in config.PART_CODES.keys() if code in message_interviewer), None)
                 if matching_code:
-                    # Add the prefix+system prompt silently as a system message without displaying it
+                    # Add the prefix+system prompt silently as system messages without displaying them
                     st.session_state.messages.append(
-                        {"role": "system", "content": config.SYSTEM_PROMPT}
+                        {"role": "system", "content": config.SYSTEM_PROMPT, "invisible": True}
                     )
                     st.session_state.messages.append(
-                        {"role": "user", "content": config.REMINDER_PROMPT[matching_code]}
+                        {"role": "system", "content": config.REMINDER_PROMPT[matching_code], "invisible": True}
                     )
                     message_placeholder.empty()
                 else:
