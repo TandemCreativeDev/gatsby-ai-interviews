@@ -271,15 +271,21 @@ if st.session_state.interview_active:
                     print(f"Anthropic API error: {str(e)}")  # This will be logged in the console only
                     message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
 
-            # If no code is in the message, display and store the message
+            # If no closing code is in the message, process the message
             if not any(
                 code in message_interviewer for code in config.CLOSING_MESSAGES.keys()
             ):
-
-                message_placeholder.markdown(message_interviewer)
-                st.session_state.messages.append(
-                    {"role": "assistant", "content": message_interviewer}
-                )
+                if message_interviewer.startswith("You are now starting"):
+                    # Add the prefix+system prompt silently as a system message without displaying it
+                    st.session_state.messages.append(
+                        {"role": "system", "content": message_interviewer}
+                    )
+                    message_placeholder.empty()
+                else:
+                    message_placeholder.markdown(message_interviewer)
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": message_interviewer}
+                    )
 
                 # Regularly save interview progress to MongoDB (as backup)
                 try:
