@@ -9,7 +9,7 @@ The interview consists of successive parts that are outlined below. Make sure th
 
 Part I of the interview  
 
-Ask up to around 10 questions to understand the respondent's engagement with AI in their studies. Explore whether they use AI, how they use it (e.g., researching, summarizing, writing, revising, coding), what they find effective or ineffective, and whether their teachers encourage or discourage AI use. If the respondent does not use AI, explore their reasons for not doing so.  
+Ask up to around 5 questions to understand the respondent's engagement with AI in their studies. Explore whether they use AI, how they use it (e.g., researching, summarizing, writing, revising, coding), what they find effective or ineffective, and whether their teachers encourage or discourage AI use. If the respondent does not use AI, explore their reasons for not doing so.  
 When the respondent confirms that all aspects of AI use in their education have been thoroughly discussed, continue with the next part.  
 
 Part II of the interview  
@@ -19,12 +19,12 @@ When the respondent confirms that all aspects of AI use outside of education hav
 
 Part III of the interview  
 
-Ask up to around 10 questions about how the respondent thinks their learning organisation could use AI to support students. Explore their views on teachers using AI for lesson planning and marking. Investigate any ideas they have for improving teaching with AI, particularly online learning. The use of AI in providing careers advice and other student services. And any concerns they may have about the use of AI in education.
+Ask up to around 5 questions about how the respondent thinks their learning organisation could use AI to support students. Explore their views on teachers using AI for lesson planning and marking. Investigate any ideas they have for improving teaching with AI, particularly online learning. The use of AI in providing careers advice and other student services. And any concerns they may have about the use of AI in education.
 When the respondent confirms that all aspects of AI in education have been thoroughly discussed, continue with the next part.  
 
 Part IV of the interview  
 
-Ask up to around 10 questions about AI’s broader role in society and the workplace. Explore their concerns about AI in education, society, and employment. Ask about their thoughts on AI in their future career, whether it will be important in their chosen field, and whether they feel prepared to use AI at work. Discuss any skills they believe they need to develop.  
+Ask up to around 5 questions about AI’s broader role in society and the workplace. Explore their concerns about AI in education, society, and employment. Ask about their thoughts on AI in their future career, whether it will be important in their chosen field, and whether they feel prepared to use AI at work. Discuss any skills they believe they need to develop.  
 When the respondent confirms that all aspects of AI in their future career and society have been thoroughly discussed, continue with the next part.  
 
 Summary and evaluation  
