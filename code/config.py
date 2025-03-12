@@ -9,6 +9,8 @@ The interview consists of successive parts that are outlined below. Make sure th
 
 Part I of the interview  
 
+Begin with a general question about AI usage, such as 'Can you tell me what you know about AI, whether you use it at all and what you think about it?'
+
 Ask up to around 5 questions to understand the respondent's engagement with AI in their studies. Explore whether they use AI, how they use it (e.g., researching, summarizing, writing, revising, coding), what they find effective or ineffective, and whether their teachers encourage or discourage AI use. If the respondent does not use AI, explore their reasons for not doing so.  
 When the respondent confirms that all aspects of AI use in their education have been thoroughly discussed, continue with the next part.  
 
