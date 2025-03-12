@@ -287,6 +287,40 @@ if st.session_state.interview_active:
                         {"role": "system", "content": config.REMINDER_PROMPT[matching_code], "invisible": True}
                     )
                     message_placeholder.empty()
+                    # Update API kwargs with the new messages
+                    api_kwargs["messages"] = st.session_state.messages
+                    new_message = ""
+                    if api == "openai":
+                        try:
+                            stream = client.chat.completions.create(**api_kwargs)
+                            for msg in stream:
+                                text_delta = msg.choices[0].delta.content
+                                if text_delta is not None:
+                                    new_message += text_delta
+                                    message_placeholder.markdown(new_message + "▌")
+                            message_placeholder.markdown(new_message)
+                        except Exception as e:
+                            st.error("We are currently experiencing technical issues, please try again later")
+                            new_message = "I apologize, but we're having trouble connecting right now. Please try again later."
+                            message_placeholder.markdown(new_message)
+                        st.session_state.messages.append(
+                            {"role": "assistant", "content": new_message}
+                        )
+                    elif api == "anthropic":
+                        try:
+                            with client.messages.stream(**api_kwargs) as stream:
+                                for text_delta in stream.text_stream:
+                                    if text_delta is not None:
+                                        new_message += text_delta
+                                        message_placeholder.markdown(new_message + "▌")
+                            message_placeholder.markdown(new_message)
+                        except Exception as e:
+                            st.error("We are currently experiencing technical issues, please try again later")
+                            new_message = "I apologize, but we're having trouble connecting right now. Please try again later."
+                            message_placeholder.markdown(new_message)
+                        st.session_state.messages.append(
+                            {"role": "assistant", "content": new_message}
+                        )
                 else:
                     message_placeholder.markdown(message_interviewer)
                     st.session_state.messages.append(
