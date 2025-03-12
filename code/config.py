@@ -57,7 +57,18 @@ Lastly, there are specific codes that must be used exclusively in designated sit
 
 Problematic content: If the respondent writes legally or ethically problematic content, please reply with exactly the code '5j3k' and no other text.  
 
-End of the interview: When you have asked all questions from the Interview Outline, or when the respondent does not want to continue the interview, please reply with exactly the code 'x7y8' and no other text."""  
+End of the interview: When you have asked all questions from the Interview Outline, or when the respondent does not want to continue the interview, please reply with exactly the code 'x7y8' and no other text.
+
+Interview Parts: When beginning a new part of the interview, you must reply with the exact code corresponding to that
+part:
+ - "Part I": reply with "P1START"
+ - "Part II": reply with "P2START"
+ - "Part III": reply with "P3START"
+ - "Part IV": reply with "P4START"
+
+Upon receiving the correct part code, the system will reinject the corresponding system prompt (using
+PART_SYSTEM_PROMPT_PREFIX) to guide the interview. Please ensure that codes are sent exactly as specified and with no
+extra text."""  
 
 
 # Pre-written closing messages for codes
