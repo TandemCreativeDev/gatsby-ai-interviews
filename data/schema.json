@@ -1,11 +1,5 @@
 {
-  "_id": "ObjectId",
-  "user_id": "hashed_id_12345",
-  "age_range": "18-24",
-  "gender": "Non-binary",
   "school": "XYZ University",
-  "start_time": "2025-03-06T14:30:00Z",
-  "end_time": "2025-03-06T14:55:00Z",
   "completed": true,
   "responses": {
     "about_user": {
@@ -47,7 +41,6 @@
       "daily_life": "AI-powered assistants"
     }
   },
-  "full_transcript": "Interviewer: Hello! Can you tell me about yourself? ...",
   "sentiment_analysis": {
     "overall": "Positive",
     "education": "Neutral",
