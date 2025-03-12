@@ -64,7 +64,7 @@ End of the interview: When you have asked all questions from the Interview Outli
 CLOSING_MESSAGES = {}
 CLOSING_MESSAGES["5j3k"] = "Thank you for participating, the interview concludes here."
 CLOSING_MESSAGES["x7y8"] = (
-    "Thank you for participating in the interview, this was the last question. Please continue with the remaining sections in the survey part. Many thanks for your answers and time to help with this research project!"
+    "Thank you for participating in the interview, this was the last question. IMPORTANT: It is essential that you remain on this page until seeing a confirmation that the interview has been saved (this will show up directly below our conversation). This may take up to 1 minute. Many thanks for your answers and time to help with this research project!"
 )
 
 
