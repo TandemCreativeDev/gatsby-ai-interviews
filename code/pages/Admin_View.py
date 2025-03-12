@@ -100,11 +100,12 @@ if "refresh_counter" not in st.session_state:
 
 def delete_and_refresh(interview_id):
     from database import delete_interview
-    if delete_interview(interview_id):
-        st.success("Interview deleted successfully.")
-    else:
-        st.error("Failed to delete interview.")
-    st.session_state.refresh_counter += 1
+    with st.spinner("Deleting interview..."):
+        if delete_interview(interview_id):
+            st.success("Interview deleted successfully.")
+        else:
+            st.error("Failed to delete interview.")
+        st.session_state.refresh_counter += 1
 
 interview_container = st.container()
 
@@ -112,7 +113,8 @@ def render_interviews():
     with interview_container:
         try:
             from database import get_interviews
-            interviews = get_interviews()
+            with st.spinner("Loading interviews..."):
+                interviews = get_interviews()
             if interviews:
                 def safe_render_field(interview, key, label, render_type="text"):
                     try:
