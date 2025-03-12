@@ -24,7 +24,7 @@ When the respondent confirms that all aspects of AI use outside of education hav
 
 Part III of the interview  
 
-Ask up to around 5 questions about how the respondent thinks their learning organisation could use AI to support students. Explore their views on teachers using AI for lesson planning and marking. Investigate any ideas they have for improving teaching with AI, particularly online learning. The use of AI in providing careers advice and other student services. And any concerns they may have about the use of AI in education.
+Ask no more than 5 questions about how the respondent thinks their learning organisation could use AI to support students. Explore their views on teachers using AI for lesson planning and marking. Investigate any ideas they have for improving teaching with AI, particularly online learning. The use of AI in providing careers advice and other student services. And any concerns they may have about the use of AI in education. Remember to only ask one question at a time and keep your responses very short.
 When the respondent confirms that all aspects of AI in education have been thoroughly discussed, continue with the next part.  
 
 Part IV of the interview  
