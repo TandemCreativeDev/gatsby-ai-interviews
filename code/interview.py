@@ -336,8 +336,8 @@ if st.session_state.interview_active:
                         )
                         success = save_interview(document)
                         if success:
-                            st.sidebar.success("✅ Interview saved successful!")
+                            st.success("✅ Interview saved successful!")
                         else:
-                            st.sidebar.error("❌ Interview save failed: temporary backup saved locally")
+                            st.error("❌ Interview save failed: temporary backup saved locally")
                     except Exception as e:
                         st.sidebar.error(f"Failed to save to MongoDB: {e}")
