@@ -144,6 +144,7 @@ elif api == "anthropic":
 
 # API kwargs
 api_kwargs["messages"] = st.session_state.messages
+print("DEBUG: Chat completions messages being passed:", st.session_state.messages)
 api_kwargs["model"] = config.MODEL
 api_kwargs["max_tokens"] = config.MAX_OUTPUT_TOKENS
 if config.TEMPERATURE is not None:
