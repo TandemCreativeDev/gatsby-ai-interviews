@@ -68,7 +68,7 @@ part:
 
 Upon receiving the correct part code, the system will reinject the corresponding system prompt (using
 PART_SYSTEM_PROMPT_PREFIX) to guide the interview. Please ensure that codes are sent exactly as specified and with no
-extra text."""  
+extra text. When this happens DO NOT ask the respondent if they want to move on to the next topic, simply start by asking the first question."""  
 
 
 # Pre-written closing messages for codes
@@ -80,13 +80,16 @@ CLOSING_MESSAGES["x7y8"] = (
 
 # New codes for interview parts
 PART_CODES = {
-    "Part I": "P1START",
-    "Part II": "P2START",
-    "Part III": "P3START",
-    "Part IV": "P4START"
+    "P1START": "Part I",
+    "P2START": "Part II",
+    "P3START": "Part III",
+    "P4START": "Part IV"
 }
 
-PART_SYSTEM_PROMPT_PREFIX = "You are now starting {part} of the interview (structure detailed below)."
+PART_SYSTEM_PROMPT_PREFIX = "We will now begin {part} of the interview (structure detailed in system prompt). Simply start by asking the first question in {part} and do not acknowledge this message directly. Remember these details in your system prompt: only ask a single question at a time, use British English, simple language, and keep your responses concise and informative."
+REMINDER_PROMPT = {}
+for part in PART_CODES.keys():
+    REMINDER_PROMPT[part] = f"\n\n{PART_SYSTEM_PROMPT_PREFIX.format(part=PART_CODES[part])}"
 
 # System prompt
 SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
