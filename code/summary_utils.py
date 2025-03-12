@@ -1,8 +1,19 @@
 import json
 from openai import OpenAI
 import streamlit as st
+import os as os
 
-with open("data/schema.json", "r") as f:
+schema_path = "data/schema.json"
+fallback_path = "../data/schema.json"
+
+if os.path.exists(schema_path):
+    path_to_use = schema_path
+elif os.path.exists(fallback_path):
+    path_to_use = fallback_path
+else:
+    raise FileNotFoundError("Neither data/schema.json nor ../data/schema.json were found.")
+
+with open(path_to_use, "r") as f:
     schema = json.load(f)
 
 def generate_transcript_summary(transcript):
