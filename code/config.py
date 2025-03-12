@@ -67,6 +67,15 @@ CLOSING_MESSAGES["x7y8"] = (
     "Thank you for participating in the interview, this was the last question. Please continue with the remaining sections in the survey part. Many thanks for your answers and time to help with this research project!"
 )
 
+# New codes for interview parts
+PART_CODES = {
+    "Part I": "P1START",
+    "Part II": "P2START",
+    "Part III": "P3START",
+    "Part IV": "P4START"
+}
+
+PART_SYSTEM_PROMPT_PREFIX = "You are now starting {part} of the interview (structure detailed below)."
 
 # System prompt
 SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
