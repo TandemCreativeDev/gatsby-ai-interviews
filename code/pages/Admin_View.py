@@ -136,15 +136,15 @@ def render_interviews():
                                 try:
                                     from datetime import datetime, timedelta
                                     st_ts = time_data.get("start_time")
-                                    curr_ts = time_data.get("current_time")
+                                    end_ts = time_data.get("current_time") or time_data.get("end_time")
                                     if st_ts:
                                         st_date = datetime.fromtimestamp(st_ts)
                                         date_str = st_date.strftime("%d %b %Y")
                                         st.write(f"Date: {date_str}")
-                                    if st_ts and curr_ts:
-                                        duration_val = time_data.get("duration_so_far")
+                                    if st_ts and end_ts:
+                                        duration_val = time_data.get("duration_so_far") or time_data.get("duration")
                                         if duration_val is None:
-                                            duration_val = curr_ts - st_ts
+                                            duration_val = end_ts - st_ts
                                         duration_formatted = str(timedelta(seconds=duration_val)).split(".")[0]
                                         st.write(f"Duration: {duration_formatted}")
                                 except Exception as e:

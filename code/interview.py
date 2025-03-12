@@ -131,7 +131,8 @@ for message in st.session_state.messages[1:]:
     else:
         avatar = config.AVATAR_RESPONDENT
     # Only display messages without codes
-    if not any(code in message["content"] for code in config.CLOSING_MESSAGES.keys()):
+    all_codes = list(config.CLOSING_MESSAGES.keys()) + list(config.PART_CODES.keys())
+    if not message.get("invisible", False) and not any(code in message["content"] for code in all_codes):
         with st.chat_message(message["role"], avatar=avatar):
             st.markdown(message["content"])
 
@@ -145,6 +146,7 @@ elif api == "anthropic":
 
 # API kwargs
 api_kwargs["messages"] = st.session_state.messages
+print("DEBUG: Chat completions messages being passed:", st.session_state.messages)
 api_kwargs["model"] = config.MODEL
 api_kwargs["max_tokens"] = config.MAX_OUTPUT_TOKENS
 if config.TEMPERATURE is not None:
@@ -272,15 +274,59 @@ if st.session_state.interview_active:
                     print(f"Anthropic API error: {str(e)}")  # This will be logged in the console only
                     message_interviewer = "I apologize, but we're having trouble connecting right now. Please try again later."
 
-            # If no code is in the message, display and store the message
+            # If no closing code is in the message, process the message
             if not any(
                 code in message_interviewer for code in config.CLOSING_MESSAGES.keys()
             ):
-
-                message_placeholder.markdown(message_interviewer)
-                st.session_state.messages.append(
-                    {"role": "assistant", "content": message_interviewer}
-                )
+                matching_code = next((code for code in config.PART_CODES.keys() if code in message_interviewer), None)
+                if matching_code:
+                    # Add the prefix+system prompt silently as system messages without displaying them
+                    st.session_state.messages.append(
+                        {"role": "system", "content": config.SYSTEM_PROMPT, "invisible": True}
+                    )
+                    st.session_state.messages.append(
+                        {"role": "system", "content": config.REMINDER_PROMPT[matching_code], "invisible": True}
+                    )
+                    message_placeholder.empty()
+                    # Update API kwargs with the new messages
+                    api_kwargs["messages"] = st.session_state.messages
+                    new_message = ""
+                    if api == "openai":
+                        try:
+                            stream = client.chat.completions.create(**api_kwargs)
+                            for msg in stream:
+                                text_delta = msg.choices[0].delta.content
+                                if text_delta is not None:
+                                    new_message += text_delta
+                                    message_placeholder.markdown(new_message + "▌")
+                            message_placeholder.markdown(new_message)
+                        except Exception as e:
+                            st.error("We are currently experiencing technical issues, please try again later")
+                            new_message = "I apologize, but we're having trouble connecting right now. Please try again later."
+                            message_placeholder.markdown(new_message)
+                        st.session_state.messages.append(
+                            {"role": "assistant", "content": new_message}
+                        )
+                    elif api == "anthropic":
+                        try:
+                            with client.messages.stream(**api_kwargs) as stream:
+                                for text_delta in stream.text_stream:
+                                    if text_delta is not None:
+                                        new_message += text_delta
+                                        message_placeholder.markdown(new_message + "▌")
+                            message_placeholder.markdown(new_message)
+                        except Exception as e:
+                            st.error("We are currently experiencing technical issues, please try again later")
+                            new_message = "I apologize, but we're having trouble connecting right now. Please try again later."
+                            message_placeholder.markdown(new_message)
+                        st.session_state.messages.append(
+                            {"role": "assistant", "content": new_message}
+                        )
+                else:
+                    message_placeholder.markdown(message_interviewer)
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": message_interviewer}
+                    )
 
                 # Regularly save interview progress to MongoDB (as backup)
                 try:
