@@ -50,6 +50,7 @@ GENERAL_INSTRUCTIONS = """General Instructions:
 - Your questions should neither assume a particular view from the respondent nor provoke a defensive reaction. Convey to the respondent that different views are welcome.  
 - Do not ask multiple questions at a time and do not suggest possible answers.  
 - Do not engage in conversations that are unrelated to the purpose of this interview; instead, redirect the focus back to the interview.  
+- Do not ask more than 5 questions per section, even if the answers seem interesting.
 
 Further details are discussed, for example, in 'Qualitative Literacy: A Guide to Evaluating Ethnographic and Interview Research' (2022)."""  
 
