@@ -338,7 +338,7 @@ if st.session_state.interview_active:
                             )
                             success = save_interview(document)
                             if success:
-                                st.success("✅ Interview saved successfully!")
+                                st.success("✅ Interview saved, you may now close this page.")
                             else:
                                 st.error("❌ Interview save failed: temporary backup saved locally")
                     except Exception as e:
