@@ -107,6 +107,15 @@ def delete_and_refresh(interview_id):
             st.error("Failed to delete interview.")
         st.session_state.refresh_counter += 1
 
+def reanalyse_and_refresh(interview_id):
+    from database import reanalyse_transcript
+    with st.spinner("Analysing transcript..."):
+        if reanalyse_transcript(interview_id):
+            st.success("Transcript analysed successfully.")
+        else:
+            st.error("Failed to analyse transcript.")
+        st.session_state.refresh_counter += 1
+
 interview_container = st.container()
 
 def render_interviews():
@@ -161,7 +170,18 @@ def render_interviews():
                         with st.container():
                             sentiments = interview.get("sentiment_analysis")
                             if sentiments and isinstance(sentiments, dict):
-                                st.markdown("### Sentiment Analysis")
+                                analyzed_at = interview.get("analyzed_at")
+                                title = "### Sentiment Analysis"
+                                if analyzed_at:
+                                    try:
+                                        if isinstance(analyzed_at, str):
+                                            from datetime import datetime
+                                            analyzed_at = datetime.fromisoformat(analyzed_at)
+                                        formatted_date = analyzed_at.strftime("%d %b %Y %H:%M")
+                                        title += f" (analyzed on {formatted_date})"
+                                    except Exception as e:
+                                        print(f"Error formatting analyzed_at date: {e}")
+                                st.markdown(title)
                                 st.markdown(render_dict_as_bullets(sentiments))
                         with st.container():
                             st.markdown("### Transcript")
@@ -177,10 +197,15 @@ def render_interviews():
                                 mime="text/plain"
                             )
                         with cols[1]:
-                            col1, col2 = st.columns([3, 1])
-                            with col2:  # This pushes the button to the right
+                            col1, col2 = st.columns([1, 1])
+                            with col1:
+                                st.button("Analyse", key=f"analyse-{interview.get('_id')}", 
+                                        on_click=reanalyse_and_refresh, args=(interview.get('_id'),),
+                                        use_container_width=True)
+                            with col2:
                                 st.button("Delete", key=f"delete-{interview.get('_id')}", 
-                                        on_click=delete_and_refresh, args=(interview.get('_id'),))
+                                        on_click=delete_and_refresh, args=(interview.get('_id'),),
+                                        use_container_width=True)
             else:
                 st.info("No interview responses found in the database.")
         except Exception as e:
