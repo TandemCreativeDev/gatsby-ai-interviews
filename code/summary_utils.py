@@ -16,13 +16,14 @@ else:
 with open(path_to_use, "r") as f:
     schema = json.load(f)
 
-def generate_transcript_summary(transcript):
+def generate_transcript_summary(transcript, force_reanalysis=False):
     """
     Takes a transcript and sends it to OpenAI's o3-mini model to generate a summary
     according to the schema format.
     
     Args:
         transcript (str): The full transcript of the interview
+        force_reanalysis (bool): Force reanalysis even if transcript was previously analyzed
         
     Returns:
         dict: JSON response containing the summary in the schema format
