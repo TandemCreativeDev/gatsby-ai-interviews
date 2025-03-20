@@ -3,7 +3,7 @@
   "completed": true,
   "responses": {
     "about_user": {
-      "age": "18-24",
+      "over25": false
       "gender": "Non-binary",
       "study_field": "Computer Science",
       "career_aspiration": "Software Engineer"
