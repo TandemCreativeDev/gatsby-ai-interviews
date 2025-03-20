@@ -178,7 +178,7 @@ def render_interviews():
                                             from datetime import datetime
                                             analyzed_at = datetime.fromisoformat(analyzed_at)
                                         formatted_date = analyzed_at.strftime("%d %b %Y %H:%M")
-                                        title += f" (analyzed on {formatted_date})"
+                                        title += f" (analysed on {formatted_date})"
                                     except Exception as e:
                                         print(f"Error formatting analyzed_at date: {e}")
                                 st.markdown(title)
