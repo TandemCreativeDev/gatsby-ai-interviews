@@ -2,8 +2,8 @@ import streamlit as st
 
 def main():
     st.set_page_config(
-        page_title="Privacy Notice - AI Research in FE Colleges",
-        page_icon="🔒",
+        page_title="Privacy Notice | Gatsby AI Interview",
+        page_icon="📄",
         layout="centered"
     )
     
