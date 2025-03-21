@@ -245,6 +245,62 @@ def delete_interview(interview_id):
         logger.error(error_msg)
         return False
 
+def reanalyse_transcript(interview_id):
+    """
+    Reanalyse the transcript of an interview and update the MongoDB document
+    
+    Args:
+        interview_id: The _id of the interview document
+        
+    Returns:
+        bool: True if reanalysis was successful, False otherwise
+    """
+    try:
+        collection = get_collection()
+        if collection is not None:
+            # Get the interview document
+            interview = collection.find_one({"_id": interview_id})
+            if not interview:
+                logger.warning(f"No interview found with id: {interview_id}")
+                return False
+                
+            # Get the transcript
+            transcript = interview.get("transcript")
+            if not transcript:
+                logger.warning(f"No transcript found for interview with id: {interview_id}")
+                return False
+                
+            # Generate a new analysis
+            from summary_utils import generate_transcript_summary
+            analysis = generate_transcript_summary(transcript, force_reanalysis=True)
+            
+            # Update fields in the document
+            update_fields = {
+                "responses": analysis.get("responses", {}),
+                "sentiment_analysis": analysis.get("sentiment_analysis", {}),
+                "analyzed_at": datetime.datetime.now()
+            }
+            
+            # Update the document in MongoDB
+            result = collection.update_one(
+                {"_id": interview_id},
+                {"$set": update_fields}
+            )
+            
+            if result.modified_count == 1:
+                logger.info(f"Successfully reanalyzed interview with id: {interview_id}")
+                return True
+            else:
+                logger.warning(f"Failed to update interview with id: {interview_id}")
+                return False
+        else:
+            logger.error("Failed to get MongoDB collection for reanalysis")
+            return False
+    except Exception as e:
+        error_msg = f"Failed to reanalyze interview data: {e}"
+        logger.error(error_msg)
+        return False
+
 def _create_backup(document):
     """Helper function to create JSON backup with proper datetime handling"""
     try:
