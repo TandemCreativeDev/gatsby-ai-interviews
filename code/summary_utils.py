@@ -3,6 +3,8 @@ from openai import OpenAI
 import streamlit as st
 import os as os
 
+import config
+
 schema_path = "data/schema.json"
 fallback_path = "../data/schema.json"
 
@@ -16,7 +18,7 @@ else:
 with open(path_to_use, "r") as f:
     schema = json.load(f)
 
-def generate_transcript_summary(transcript, force_reanalysis=False):
+def generate_transcript_summary(transcript):
     """
     Takes a transcript and sends it to OpenAI's o3-mini model to generate a summary
     according to the schema format.
@@ -54,18 +56,18 @@ def generate_transcript_summary(transcript, force_reanalysis=False):
         print(f"OpenAI client initialized successfully")
         
         # Create the prompt with instructions to summarize according to the schema
-        system_prompt = """You are an expert at analyzing interview transcripts and extracting key information according to a schema.
+        system_prompt = """You are an expert at analysing interview transcripts, extracting key information according to a schema and anonymising sensitive personal data or confidential and explicit content.
         Return ONLY valid JSON without additional text. Follow the exact schema provided.
         IMPORTANT: If you cannot find information for a specific field in the transcript, leave that field empty (empty string, empty array, or null as appropriate). DO NOT use the example values from the schema as defaults."""
         
         user_prompt = f"""
-        Please analyze the following interview transcript and create a summary using this exact JSON schema format:
+        Analyse the following interview transcript and create a summary using this exact JSON schema format:
         
         ```json
         {schema}
         ```
-        
-        Here is the transcript to analyze:
+        For the last key "transcript", you must redact personal data or sensitive, confidential or even explicit information that the user may inadvertently disclose from the transcript and return it with [redacted: comment if this is data we have saved / no comment if this is data we are not supposed to be recording]. If it is information we extract (if over 25, gender, study field, career aspiration and college), then leave a comment just to indicate that. Be very thorough, some information we definetely don't want to see: a specific age, a name, an address or city lived in, a phone number or email address, any pronouns used about themselves or others that would reveal gender, what year they are in at college, a specific course they are studying, any names of people they know or teachers, any names of places they visited, any names of things they own or use, any information about their job or education, details surrounding physical or mental health. Once you have gone through the full transcript, go again a second time on the anonymised version and see if you can pick up any additional information that you missed the first time.
+        Here is the transcript to analyse:
         
         {transcript}
         
@@ -76,9 +78,9 @@ def generate_transcript_summary(transcript, force_reanalysis=False):
         """
         
         # Call OpenAI o3-mini to generate the summary
-        print(f"Calling OpenAI API with model: o3-mini")
+        print(f"Calling OpenAI API with model: ${config.MODEL['analysis']}")
         response = client.chat.completions.create(
-            model="o3-mini",
+            model=config.MODEL['analysis'],
             # Temperature not supported for o3-mini model
             response_format={"type": "json_object"},
             messages=[

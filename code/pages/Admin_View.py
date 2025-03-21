@@ -57,8 +57,14 @@ def display_time_info(file_path):
         st.error(f"Error reading time information: {e}")
 
 # Set page title and icon
-st.set_page_config(page_title="Admin View | Gatsby AI Interview", page_icon="🔒")
+st.set_page_config(page_title="Admin View | Gatsby AI Interview", page_icon=config.FAVICON_PATH)
 login_placeholder = st.empty()
+
+# Create columns in the sidebar to center a smaller image
+col1, col2, col3 = st.sidebar.columns([1, 2, 1])
+with col2:
+    # Display smaller centered image without pixelation by retaining aspect ratio
+    st.image(config.LOGO_PATH, use_container_width=True)
 
 # Admin login - separate from regular login
 if not admin_login():
@@ -164,7 +170,8 @@ def render_interviews():
                                 st.write(f"Completed: {tick}")
                         with st.container():
                             responses = interview.get("responses")
-                            if responses and isinstance(responses, dict):
+                            isAnalysed = responses and isinstance(responses, dict)
+                            if isAnalysed:
                                 st.markdown("### Responses")
                                 st.markdown(render_dict_as_bullets(responses))
                         with st.container():
@@ -185,7 +192,9 @@ def render_interviews():
                                 st.markdown(render_dict_as_bullets(sentiments))
                         with st.container():
                             st.markdown("### Transcript")
-                            st.text_area("", interview.get("transcript", ""), height=200)
+                            transcript = interview.get("transcript")
+                            if transcript and isinstance(transcript, str):
+                                st.text_area("", transcript, height=200)
                         st.write(" ")
                         st.write(" ")
                         cols = st.columns([1, 1])
@@ -198,10 +207,11 @@ def render_interviews():
                             )
                         with cols[1]:
                             col1, col2 = st.columns([1, 1])
-                            with col1:
-                                st.button("Analyse", key=f"analyse-{interview.get('_id')}", 
-                                        on_click=reanalyse_and_refresh, args=(interview.get('_id'),),
-                                        use_container_width=True)
+                            if not isAnalysed:
+                                with col1:
+                                    st.button("Analyse", key=f"analyse-{interview.get('_id')}", 
+                                            on_click=reanalyse_and_refresh, args=(interview.get('_id'),),
+                                            use_container_width=True)
                             with col2:
                                 st.button("Delete", key=f"delete-{interview.get('_id')}", 
                                         on_click=delete_and_refresh, args=(interview.get('_id'),),

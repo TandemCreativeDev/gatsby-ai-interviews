@@ -1,11 +1,19 @@
+import os
 import streamlit as st
+
+import config
 
 def main():
     st.set_page_config(
         page_title="Privacy Notice | Gatsby AI Interview",
-        page_icon="📄",
+        page_icon=config.FAVICON_PATH,
         layout="centered"
     )
+    # Create columns in the sidebar to center a smaller image
+    col1, col2, col3 = st.sidebar.columns([1, 2, 1])
+    with col2:
+        # Display smaller centered image without pixelation by retaining aspect ratio
+        st.image(config.LOGO_PATH, use_container_width=True)
     
     st.title("Privacy Notice for Research on AI Use in FE Colleges")
     
@@ -133,10 +141,6 @@ def main():
     By continuing with this research activity, you acknowledge that you have read and understood
     this privacy notice.
     """)
-    
-    # Optional: Add acknowledgment button
-    if st.button("I Acknowledge the Privacy Notice"):
-        st.success("Thank you for acknowledging the privacy notice. You may now proceed with the research activity.")
 
 if __name__ == "__main__":
     main()

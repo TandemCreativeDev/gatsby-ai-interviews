@@ -84,16 +84,18 @@ def prepare_mongo_data(username, transcript, time_data, backup=False):
     """
     document = {
                 "username": username,
-                "transcript": transcript,
+                "completed": not backup,
+                "backup": backup,
                 "time_data": time_data,
                 "timestamp": datetime.datetime.now(),
                 "metadata": {
                     "version": "1.0",
                     "source": "ai_interview_system"
-                },
-                "backup": backup
+                }
             }
-    if not backup: 
+    if backup:
+        document["transcript"] = transcript
+    else:
         document.update(generate_transcript_summary(transcript))
     return document
 
@@ -271,20 +273,12 @@ def reanalyse_transcript(interview_id):
                 return False
                 
             # Generate a new analysis
-            from summary_utils import generate_transcript_summary
-            analysis = generate_transcript_summary(transcript, force_reanalysis=True)
-            
-            # Update fields in the document
-            update_fields = {
-                "responses": analysis.get("responses", {}),
-                "sentiment_analysis": analysis.get("sentiment_analysis", {}),
-                "analyzed_at": datetime.datetime.now()
-            }
+            analysis = generate_transcript_summary(transcript)
             
             # Update the document in MongoDB
             result = collection.update_one(
                 {"_id": interview_id},
-                {"$set": update_fields}
+                {"$set": analysis}
             )
             
             if result.modified_count == 1:

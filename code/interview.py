@@ -9,11 +9,11 @@ import os
 import config
 
 # Load API library
-if "gpt" in config.MODEL.lower():
+if "gpt" in config.MODEL["chat"].lower():
     api = "openai"
     from openai import OpenAI
 
-elif "claude" in config.MODEL.lower():
+elif "claude" in config.MODEL["chat"].lower():
     api = "anthropic"
     import anthropic
 else:
@@ -22,15 +22,13 @@ else:
     )
 
 # Set page title and icon
-st.set_page_config(page_title="Interview | Gatsby AI Interview", page_icon=config.AVATAR_INTERVIEWER)
+st.set_page_config(page_title="Interview | Gatsby AI Interview", page_icon=config.FAVICON_PATH)
 
-# Use a dynamic path that works both locally and in deployment
-image_path = "assets/GATSBY_Logo_RGB.png" if os.path.exists("assets/GATSBY_Logo_RGB.png") else "code/assets/GATSBY_Logo_RGB.png"
 # Create columns in the sidebar to center a smaller image
 col1, col2, col3 = st.sidebar.columns([1, 2, 1])
 with col2:
     # Display smaller centered image without pixelation by retaining aspect ratio
-    st.image(image_path, use_container_width=True)
+    st.image(config.LOGO_PATH, use_container_width=True)
 
 # Check if usernames and logins are enabled
 if config.LOGINS:
@@ -145,7 +143,7 @@ elif api == "anthropic":
 
 # API kwargs
 api_kwargs["messages"] = st.session_state.messages
-api_kwargs["model"] = config.MODEL
+api_kwargs["model"] = config.MODEL["chat"]
 api_kwargs["max_tokens"] = config.MAX_OUTPUT_TOKENS
 if config.TEMPERATURE is not None:
     api_kwargs["temperature"] = config.TEMPERATURE
