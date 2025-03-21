@@ -55,7 +55,8 @@ def generate_transcript_summary(transcript, force_reanalysis=False):
         
         # Create the prompt with instructions to summarize according to the schema
         system_prompt = """You are an expert at analyzing interview transcripts and extracting key information according to a schema.
-        Return ONLY valid JSON without additional text. Follow the exact schema provided."""
+        Return ONLY valid JSON without additional text. Follow the exact schema provided.
+        IMPORTANT: If you cannot find information for a specific field in the transcript, leave that field empty (empty string, empty array, or null as appropriate). DO NOT use the example values from the schema as defaults."""
         
         user_prompt = f"""
         Please analyze the following interview transcript and create a summary using this exact JSON schema format:
@@ -68,7 +69,10 @@ def generate_transcript_summary(transcript, force_reanalysis=False):
         
         {transcript}
         
-        Return ONLY the valid JSON object without any additional text, explanations, or commentary.
+        IMPORTANT INSTRUCTIONS:
+        1. If you cannot find information for a specific field in the transcript, leave that field empty (empty string, empty array, or null as appropriate).
+        2. DO NOT use the example values from the schema as defaults.
+        3. Return ONLY the valid JSON object without any additional text, explanations, or commentary.
         """
         
         # Call OpenAI o3-mini to generate the summary
