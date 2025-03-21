@@ -11,3 +11,7 @@ This tool conducts semi-structured interviews about AI usage in education, focus
 - Admin Dashboard: Review, download, and manage interview transcripts
 - MongoDB Integration: Secure storage of interview responses
 - Streamlined UI: Clean interface with minimal distractions for participants
+
+## Credits
+
+This project is based on [Friedrich Geiecke's work](https://github.com/friedrichgeiecke/interviews)
