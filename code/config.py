@@ -90,7 +90,7 @@ SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
 
 # Commented out for easy switching between models
 # MODEL = "claude-3-5-sonnet-20240620"  
-MODEL = "gpt-4o-2024-08-06" 
+MODEL = {"chat":"gpt-4o-2024-08-06", "analysis": "o3-mini" }
 TEMPERATURE = 0.1  # (None for default value)
 MAX_OUTPUT_TOKENS = 2048
 
@@ -115,3 +115,7 @@ MONGODB_COLLECTION_NAME = "responses"
 # Avatars displayed in the chat interface
 AVATAR_INTERVIEWER = "\U0001F393"
 AVATAR_RESPONDENT = "\U0001F9D1\U0000200D\U0001F4BB"
+
+# image paths
+FAVICON_PATH = "code/assets/favicon.ico"
+LOGO_PATH = "code/assets/GATSBY_Logo_RGB.png"
