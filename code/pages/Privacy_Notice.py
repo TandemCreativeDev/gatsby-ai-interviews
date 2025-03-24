@@ -142,5 +142,9 @@ def main():
     this privacy notice.
     """)
 
+    # TASK: After ackowledging it should close the window (which will return to the previous window the chat)
+    if st.button("I Acknowledge the Privacy Notice"):
+        st.success("Thank you for acknowledging the privacy notice. You may now proceed with the research activity.")
+
 if __name__ == "__main__":
     main()
