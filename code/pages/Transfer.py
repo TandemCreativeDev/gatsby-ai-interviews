@@ -1,17 +1,14 @@
 import streamlit as st
 from pymongo import MongoClient
 from datetime import datetime, timedelta
-import pytz
 import pandas as pd
-import os
-import sys
 import config  # Import the config module for MongoDB settings
 
 # Import login functionality from the centralized login module
 from login import setup_admin_page
 
 # Initialize the admin page with login
-if not setup_admin_page("MongoDB Collection Migration Tool"):
+if not setup_admin_page("Transfer | Gatsby AI Interview"):
     st.stop()
 
 # Additional description for the page
