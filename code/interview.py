@@ -44,7 +44,7 @@ else:
 # Create directories if they do not already exist
 if not os.path.exists(config.BACKUPS_DIRECTORY):
     os.makedirs(config.BACKUPS_DIRECTORY)
-upload_local_backups()
+upload_local_backups("Student")
 
 
 # Initialise session state
@@ -110,7 +110,7 @@ with col2:
                     transcript=transcript,
                     time_data=time_data
                 )
-                save_interview(document)
+                save_interview(document, "Student")
                 # If MongoDB connection is restored, delete backup file
                 if test_connection():
                     backup_file = os.path.join(config.BACKUPS_DIRECTORY, f"{timestamped_username}.json")
@@ -296,7 +296,7 @@ if st.session_state.interview_active:
                         time_data=time_data,
                         backup=True
                     )
-                    save_interview(document)
+                    save_interview(document, "Student")
                 except:
                     pass
 
@@ -334,7 +334,7 @@ if st.session_state.interview_active:
                                 transcript=transcript,
                                 time_data=time_data
                             )
-                            success = save_interview(document)
+                            success = save_interview(document, "Student")
                             if success:
                                 st.success("✅ Interview saved, you may now close this page.")
                             else:
