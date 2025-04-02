@@ -71,6 +71,9 @@ if "college_name" not in st.session_state:
     
 if "age_group" not in st.session_state:
     st.session_state.age_group = ""
+    
+if "gender" not in st.session_state:
+    st.session_state.gender = ""
 
 # # Check if interview previously completed by querying the database
 # interviews = get_interviews(username=st.session_state.username)
@@ -120,7 +123,8 @@ with col2:
                     transcript=transcript,
                     time_data=time_data,
                     college_name=st.session_state.college_name,
-                    age_group=st.session_state.age_group
+                    age_group=st.session_state.age_group,
+                    gender=st.session_state.gender
                 )
                 save_interview(document)
                 # If MongoDB connection is restored, delete backup file
@@ -216,6 +220,7 @@ if st.session_state.interview_active and not st.session_state.user_info_submitte
     with st.form("user_info_form"):
         college_name = st.text_input("College Name", value=st.session_state.college_name)
         age_group = st.selectbox("Age Group", options=["", "Under 25", "25 or older"], index=0)
+        gender = st.selectbox("Gender", options=["", "Male", "Female", "Non-binary", "Prefer not to say"], index=0)
         
         submit_button = st.form_submit_button("Start Interview")
         
@@ -224,9 +229,12 @@ if st.session_state.interview_active and not st.session_state.user_info_submitte
                 st.error("Please enter your college name.")
             elif not age_group:
                 st.error("Please select your age group.")
+            elif not gender:
+                st.error("Please select your gender.")
             else:
                 st.session_state.college_name = college_name
                 st.session_state.age_group = age_group
+                st.session_state.gender = gender
                 st.session_state.user_info_submitted = True
                 st.rerun()
 
@@ -330,6 +338,7 @@ elif st.session_state.interview_active and st.session_state.user_info_submitted:
                         time_data=time_data,
                         college_name=st.session_state.college_name,
                         age_group=st.session_state.age_group,
+                        gender=st.session_state.gender,
                         backup=True
                     )
                     save_interview(document)
@@ -370,7 +379,8 @@ elif st.session_state.interview_active and st.session_state.user_info_submitted:
                                 transcript=transcript,
                                 time_data=time_data,
                                 college_name=st.session_state.college_name,
-                                age_group=st.session_state.age_group
+                                age_group=st.session_state.age_group,
+                                gender=st.session_state.gender
                             )
                             success = save_interview(document)
                             if success:
