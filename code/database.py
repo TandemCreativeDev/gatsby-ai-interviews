@@ -70,7 +70,7 @@ def test_connection():
             st.error(error_msg)
     return []
 
-def prepare_mongo_data(username, transcript, time_data, backup=False):
+def prepare_mongo_data(username, transcript, time_data, college_name="", age_group="", backup=False):
     """
     Prepare data for MongoDB
     
@@ -78,6 +78,9 @@ def prepare_mongo_data(username, transcript, time_data, backup=False):
         username (str): Username of the interviewee
         transcript (str): Interview transcript
         time_data (dict): Time-related data for the interview
+        college_name (str, optional): Name of the college. Defaults to "".
+        age_group (str, optional): Age group (Under 25 or 25 or older). Defaults to "".
+        backup (bool, optional): Whether this is a backup. Defaults to False.
     
     Returns:
         dict: Mongo document
@@ -87,6 +90,8 @@ def prepare_mongo_data(username, transcript, time_data, backup=False):
                 "completed": not backup,
                 "backup": backup,
                 "time_data": time_data,
+                "college_name": college_name,
+                "age_group": age_group,
                 "timestamp": datetime.datetime.now(),
                 "metadata": {
                     "version": "1.0",
