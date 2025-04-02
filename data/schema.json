@@ -1,8 +1,6 @@
 {
-  "college": "Capital City College",
   "responses": {
     "about_user": {
-      "over_25": false,
       "gender": "Non-binary",
       "study_field": "Computer Science",
       "career_aspiration": "Software Engineer"
@@ -46,5 +44,5 @@
     "workplace": "Positive",
     "society": "Concerned"
   },
-  "transcript": "assistant: Hello... user: Hi my name is [redacted] and I'm [redacted: user is over 25] years old..."
+  "transcript": "assistant: Hello... user: Hi my name is [redacted] and I'm [redacted] years old..."
 }
