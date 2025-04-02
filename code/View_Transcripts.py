@@ -9,53 +9,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from login import setup_admin_page
 
 # Initialize the admin page with login
-if not setup_admin_page("Admin View | Gatsby AI Interview"):
+if not setup_admin_page("View Transcripts | Gatsby AI Interview"):
     st.stop()
 
 st.write("View completed interview transcripts and processed data.")
 
-st.header("Manual Transcript Upload")
-with st.form("upload_transcript_form"):
-    transcript = st.text_area("Transcript")
-    type_radio = st.radio("Type", options=["student", "staff"])
-    if type_radio == "staff":
-        role = st.selectbox("Role", options=["principal", "teacher", "office"])
-    else:
-        role = None
-    college = st.text_input("College")
-    tags_text = st.text_input("Tags (comma separated)")
-    import datetime
-    start_date = st.date_input("Start Date")
-    start_time_input = st.time_input("Start Time")
-    end_date = st.date_input("End Date")
-    end_time_input = st.time_input("End Time")
-    submit = st.form_submit_button("Upload Transcript")
-
-if submit:
-    try:
-        start_datetime = datetime.datetime.combine(start_date, start_time_input)
-        end_datetime = datetime.datetime.combine(end_date, end_time_input)
-        time_data = {}
-        time_data["start_time"] = start_datetime.timestamp()
-        time_data["end_time"] = end_datetime.timestamp()
-        time_data["duration"] = time_data["end_time"] - time_data["start_time"]
-        document = {
-            "username": "manual_upload",
-            "transcript": transcript,
-            "type": type_radio,
-            "college": college,
-            "tags": [tag.strip() for tag in tags_text.split(",") if tag.strip()],
-            "time_data": time_data,
-        }
-        if type_radio == "staff":
-            document["role"] = role
-        from database import save_interview
-        if save_interview(document):
-            st.success("Transcript uploaded successfully.")
-        else:
-            st.error("Failed to upload transcript.")
-    except Exception as e:
-        st.error(f"Error uploading transcript: {e}")
+st.header("All Transcripts")
 
 def snake_to_title(s):
     """Convert snake_case to Title Case with spaces."""
@@ -87,16 +46,16 @@ def render_dict_as_bullets(d, level=0):
 if "refresh_counter" not in st.session_state:
     st.session_state.refresh_counter = 0
 
-def delete_and_refresh(interview_id):
+def delete_and_refresh(interview_id, type="Student"):
     from database import delete_interview
     with st.spinner("Deleting interview..."):
-        if delete_interview(interview_id):
+        if delete_interview(interview_id, type):
             st.success("Interview deleted successfully.")
         else:
             st.error("Failed to delete interview.")
         st.session_state.refresh_counter += 1
 
-def reanalyse_and_refresh(interview_id):
+def reanalyse_and_refresh(interview_id, type="Student"):
     from database import reanalyse_transcript
     with st.spinner("Analysing transcript..."):
         if reanalyse_transcript(interview_id):
