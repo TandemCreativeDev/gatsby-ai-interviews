@@ -14,6 +14,44 @@ if not setup_admin_page("Admin View | Gatsby AI Interview"):
 
 st.write("View completed interview transcripts and processed data.")
 
+st.header("Manual Transcript Upload")
+with st.form("upload_transcript_form"):
+    transcript = st.text_area("Transcript")
+    type_radio = st.radio("Type", options=["student", "staff"])
+    if type_radio == "staff":
+        role = st.selectbox("Role", options=["principal", "teacher", "office"])
+    else:
+        role = None
+    college = st.text_input("College")
+    tags_text = st.text_input("Tags (comma separated)")
+    start_time = st.datetime_input("Start Time")
+    end_time = st.datetime_input("End Time")
+    submit = st.form_submit_button("Upload Transcript")
+
+if submit:
+    try:
+        time_data = {}
+        time_data["start_time"] = start_time.timestamp()
+        time_data["end_time"] = end_time.timestamp()
+        time_data["duration"] = time_data["end_time"] - time_data["start_time"]
+        document = {
+            "username": "manual_upload",
+            "transcript": transcript,
+            "type": type_radio,
+            "college": college,
+            "tags": [tag.strip() for tag in tags_text.split(",") if tag.strip()],
+            "time_data": time_data,
+        }
+        if type_radio == "staff":
+            document["role"] = role
+        from database import save_interview
+        if save_interview(document):
+            st.success("Transcript uploaded successfully.")
+        else:
+            st.error("Failed to upload transcript.")
+    except Exception as e:
+        st.error(f"Error uploading transcript: {e}")
+
 def snake_to_title(s):
     """Convert snake_case to Title Case with spaces."""
     return " ".join(word.capitalize() for word in s.split("_"))
