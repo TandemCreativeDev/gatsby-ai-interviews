@@ -24,15 +24,20 @@ with st.form("upload_transcript_form"):
         role = None
     college = st.text_input("College")
     tags_text = st.text_input("Tags (comma separated)")
-    start_time = st.datetime_input("Start Time")
-    end_time = st.datetime_input("End Time")
+    import datetime
+    start_date = st.date_input("Start Date")
+    start_time_input = st.time_input("Start Time")
+    end_date = st.date_input("End Date")
+    end_time_input = st.time_input("End Time")
     submit = st.form_submit_button("Upload Transcript")
 
 if submit:
     try:
+        start_datetime = datetime.datetime.combine(start_date, start_time_input)
+        end_datetime = datetime.datetime.combine(end_date, end_time_input)
         time_data = {}
-        time_data["start_time"] = start_time.timestamp()
-        time_data["end_time"] = end_time.timestamp()
+        time_data["start_time"] = start_datetime.timestamp()
+        time_data["end_time"] = end_datetime.timestamp()
         time_data["duration"] = time_data["end_time"] - time_data["start_time"]
         document = {
             "username": "manual_upload",
