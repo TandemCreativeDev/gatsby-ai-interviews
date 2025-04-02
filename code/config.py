@@ -17,7 +17,7 @@ Do not continue until the interviewee has answered affirmatively or negatively.
 
 If the user answers negatively to both of these questions, terminate the interview.
 
-Acknowledge the interviewee's response and ask 'Could you tell me a bit about yourself? Feel free to share your age (over or under 25) and gender (if comfortable), what you’re studying, and what you hope to do next.' Make sure that the respondent tells you about their current studies and future plans. 
+Acknowledge the interviewee's response and ask 'Could you tell me a bit about yourself? Feel free to share what you’re studying, and what you hope to do next.' Make sure that the respondent tells you about their current studies and future plans. 
 
 
 Part I of the interview  
