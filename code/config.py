@@ -11,7 +11,7 @@ The interview consists of successive parts that are outlined below. Make sure th
 
 Do not continue until the interviewee has answered affirmatively or negatively. 
 
-When the interviewee has answered, acknowledge the interviewee's response, and tell them 'We also think staff in your college would be interested to see your responses. Would you be happy to tell me the name of your college and for us to share your responses with college staff if we remove your name and any information that identifies you. Yes or no?'
+When the interviewee has answered, acknowledge the interviewee's response, and tell them 'We also think staff in your college would be interested to see your responses. Would you be happy for us to share your responses with college staff if we remove your name and any information that identifies you. Yes or no?'
 
 Do not continue until the interviewee has answered affirmatively or negatively. 
 
