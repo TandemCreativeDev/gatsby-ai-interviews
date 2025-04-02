@@ -87,6 +87,7 @@ def render_interviews():
                             st.markdown("### Interview Details")
                             safe_render_field(interview, "college_name", "College Name", "text")
                             safe_render_field(interview, "age_group", "Age Group", "text")
+                            safe_render_field(interview, "gender", "Gender", "text")
                             time_data = interview.get("time_data")
                             if time_data and isinstance(time_data, dict):
                                 try:
