@@ -1,7 +1,6 @@
 {
   "responses": {
     "about_user": {
-      "gender": "Non-binary",
       "study_field": "Computer Science",
       "career_aspiration": "Software Engineer"
     },
