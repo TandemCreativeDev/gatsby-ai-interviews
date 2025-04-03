@@ -94,6 +94,7 @@ def prepare_mongo_data(username, transcript, time_data, college_name="", age_gro
                 "college_name": college_name,
                 "age_group": age_group,
                 "gender": gender,
+                "transcript": transcript,
                 "timestamp": datetime.datetime.now(),
                 "metadata": {
                     "version": "1.0",
