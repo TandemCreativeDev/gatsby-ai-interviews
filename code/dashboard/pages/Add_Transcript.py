@@ -15,16 +15,18 @@ if not setup_admin_page("Add Transcript | Gatsby AI Interview"):
 st.write("Add interview transcripts and data manually.")
 
 st.header("Manual Transcript Upload")
+type_radio = st.radio("Type", options=["Student", "Staff"])
+role = None
+
 with st.form("upload_transcript_form"):
     username = st.text_input("Name")
-    type_radio = st.radio("Type", options=["Student", "Staff"])
+    st.write(f"Type: {type_radio}")
+    
     if type_radio == "Staff":
         role = st.selectbox("Role", options=["principal", "teacher", "office"])
-    else:
-        role = None
+    
     college = st.text_input("College")
     tags_text = st.text_input("Tags (comma separated)")
-    import datetime
     start_date = st.date_input("Start Date")
     start_time_input = st.time_input("Start Time")
     end_date = st.date_input("End Date")
@@ -33,6 +35,7 @@ with st.form("upload_transcript_form"):
     submit = st.form_submit_button("Upload Transcript")
 
 if submit:
+    import datetime
     try:
         start_datetime = datetime.datetime.combine(start_date, start_time_input)
         end_datetime = datetime.datetime.combine(end_date, end_time_input)
