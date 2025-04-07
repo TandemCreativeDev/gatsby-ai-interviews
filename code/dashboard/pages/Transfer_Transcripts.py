@@ -8,11 +8,12 @@ import config  # Import the config module for MongoDB settings
 from login import setup_admin_page
 
 # Initialize the admin page with login
-if not setup_admin_page("Transfer | Gatsby AI Interview"):
+if not setup_admin_page("Transfer Transcripts | Gatsby AI Interview"):
     st.stop()
 
-# Additional description for the page
-st.markdown("Transfer documents between MongoDB collections based on timestamp criteria")
+st.write("Transfer documents between MongoDB collections based on timestamp criteria.")
+
+st.header("Manual Transcript Transfer")
 
 # Initialize session state for extracted documents
 if 'extracted_docs' not in st.session_state:

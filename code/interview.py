@@ -1,9 +1,6 @@
 
 import streamlit as st
 import time
-from utils import (
-    check_password,
-)
 from database import prepare_mongo_data, save_interview, test_connection, upload_local_backups
 import os
 import config
@@ -30,21 +27,13 @@ with col2:
     # Display smaller centered image without pixelation by retaining aspect ratio
     st.image(config.LOGO_PATH, use_container_width=True)
 
-# Check if usernames and logins are enabled
-if config.LOGINS:
-    # Check password (displays login screen)
-    pwd_correct, username = check_password()
-    if not pwd_correct:
-        st.stop()
-    else:
-        st.session_state.username = username
-else:
-    st.session_state.username = "user"
+# set username
+st.session_state.username = "user"
 
 # Create directories if they do not already exist
 if not os.path.exists(config.BACKUPS_DIRECTORY):
     os.makedirs(config.BACKUPS_DIRECTORY)
-upload_local_backups()
+upload_local_backups("Student")
 
 
 # Initialise session state
@@ -126,7 +115,7 @@ with col2:
                     age_group=st.session_state.age_group,
                     gender=st.session_state.gender
                 )
-                save_interview(document)
+                save_interview(document, "Student")
                 # If MongoDB connection is restored, delete backup file
                 if test_connection():
                     backup_file = os.path.join(config.BACKUPS_DIRECTORY, f"{timestamped_username}.json")
@@ -341,7 +330,7 @@ elif st.session_state.interview_active and st.session_state.user_info_submitted:
                         gender=st.session_state.gender,
                         backup=True
                     )
-                    save_interview(document)
+                    save_interview(document, "Student")
                 except:
                     pass
 
@@ -382,7 +371,7 @@ elif st.session_state.interview_active and st.session_state.user_info_submitted:
                                 age_group=st.session_state.age_group,
                                 gender=st.session_state.gender
                             )
-                            success = save_interview(document)
+                            success = save_interview(document, "Student")
                             if success:
                                 st.success("✅ Interview saved, you may now close this page.")
                             else:

@@ -1,6 +1,6 @@
 import streamlit as st
 import datetime
-from database import test_connection, get_mongo_client, get_collection
+from database import test_connection, get_collection
 
 st.set_page_config(page_title="MongoDB Connection Test", page_icon="🔌")
 
@@ -50,7 +50,7 @@ with st.form("insert_test"):
 st.header("Recent Test Documents")
 
 if st.button("View Recent Test Documents"):
-    collection = get_collection()
+    collection = get_collection("Student")
     if collection is not None:
         try:
             # Find test documents
