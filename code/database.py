@@ -157,7 +157,7 @@ def save_interview(document, type):
         _create_backup(document)
         return False
 
-def upload_local_backups():
+def upload_local_backups(type="Student"):
     """
     Scan local backup directory for JSON backup files,
     attempt to upload them to MongoDB using save_interview_bulk,
@@ -174,7 +174,7 @@ def upload_local_backups():
             with open(backup_path, "r", encoding="utf-8") as f:
                 document = json.load(f)
             # Attempt upload using save_interview_bulk
-            success = save_interview(document)
+            success = save_interview(document, type)
             if success:
                 os.remove(backup_path)
                 logger.info(f"Uploaded and deleted backup file: {backup_path}")
