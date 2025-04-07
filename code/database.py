@@ -1,8 +1,7 @@
 import json
 import os
-import time
 import streamlit as st
-from pymongo import MongoClient, ReturnDocument
+from pymongo import MongoClient
 import config
 import datetime
 import logging
