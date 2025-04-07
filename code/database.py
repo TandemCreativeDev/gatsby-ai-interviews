@@ -50,7 +50,11 @@ def get_collection(type):
     """
     db = get_database()
     if db is not None:
-        return db[config.MONGODB_COLLECTION_NAME[type]]
+        if type in config.MONGODB_COLLECTION_NAME:
+            return db[config.MONGODB_COLLECTION_NAME[type]]
+        else:
+            logger.error(f"Collection type '{type}' not found in configuration.")
+            return None
     return None
 
 def test_connection():
