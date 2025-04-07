@@ -9,10 +9,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from login import setup_admin_page
 
 # Initialize the admin page with login
-if not setup_admin_page("Admin View | Gatsby AI Interview"):
+if not setup_admin_page("View Transcripts | Gatsby AI Interview"):
     st.stop()
 
 st.write("View completed interview transcripts and processed data.")
+
+st.header("All Transcripts")
 
 def snake_to_title(s):
     """Convert snake_case to Title Case with spaces."""
@@ -44,16 +46,16 @@ def render_dict_as_bullets(d, level=0):
 if "refresh_counter" not in st.session_state:
     st.session_state.refresh_counter = 0
 
-def delete_and_refresh(interview_id):
+def delete_and_refresh(interview_id, type="Student"):
     from database import delete_interview
     with st.spinner("Deleting interview..."):
-        if delete_interview(interview_id):
+        if delete_interview(interview_id, type):
             st.success("Interview deleted successfully.")
         else:
             st.error("Failed to delete interview.")
         st.session_state.refresh_counter += 1
 
-def reanalyse_and_refresh(interview_id):
+def reanalyse_and_refresh(interview_id, type="Student"):
     from database import reanalyse_transcript
     with st.spinner("Analysing transcript..."):
         if reanalyse_transcript(interview_id):

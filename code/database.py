@@ -1,8 +1,7 @@
 import json
 import os
-import time
 import streamlit as st
-from pymongo import MongoClient, ReturnDocument
+from pymongo import MongoClient
 import config
 import datetime
 import logging
@@ -44,13 +43,17 @@ def get_database():
         return client[config.MONGODB_DB_NAME]
     return None
 
-def get_collection():
+def get_collection(type):
     """
     Get MongoDB collection
     """
     db = get_database()
     if db is not None:
-        return db[config.MONGODB_COLLECTION_NAME]
+        if type in config.MONGODB_COLLECTION_NAME:
+            return db[config.MONGODB_COLLECTION_NAME[type]]
+        else:
+            logger.error(f"Collection type '{type}' not found in configuration.")
+            return None
     return None
 
 def test_connection():
@@ -107,7 +110,7 @@ def prepare_mongo_data(username, transcript, time_data, college="", age_group=""
         document.update(generate_transcript_summary(transcript))
     return document
 
-def save_interview(document):
+def save_interview(document, type):
     """
     Save interview data to MongoDB
     
@@ -130,7 +133,7 @@ def save_interview(document):
             # If timestamp doesn't exist or isn't a datetime, create one
             document['timestamp'] = datetime.datetime.now()
             
-        collection = get_collection()
+        collection = get_collection(type)
         if collection is not None:
             from pymongo import ReturnDocument
             
@@ -165,7 +168,7 @@ def save_interview(document):
         _create_backup(document)
         return False
 
-def upload_local_backups():
+def upload_local_backups(type="Student"):
     """
     Scan local backup directory for JSON backup files,
     attempt to upload them to MongoDB using save_interview_bulk,
@@ -182,7 +185,7 @@ def upload_local_backups():
             with open(backup_path, "r", encoding="utf-8") as f:
                 document = json.load(f)
             # Attempt upload using save_interview_bulk
-            success = save_interview(document)
+            success = save_interview(document, type)
             if success:
                 os.remove(backup_path)
                 logger.info(f"Uploaded and deleted backup file: {backup_path}")
@@ -191,7 +194,7 @@ def upload_local_backups():
         except Exception as e:
             logger.error(f"Error processing backup file {backup_path}: {e}")
 
-def get_interviews(username=None, limit=100):
+def get_interviews(username=None, limit=100, type="Student"):
     """
     Retrieve interview data from MongoDB
     
@@ -203,7 +206,7 @@ def get_interviews(username=None, limit=100):
         list: List of interview documents
     """
     try:
-        collection = get_collection()
+        collection = get_collection(type)
         if collection is not None:
             # Create filter
             filter_query = {}
@@ -227,7 +230,7 @@ def get_interviews(username=None, limit=100):
         st.error(error_msg)
         return []
         
-def delete_interview(interview_id):
+def delete_interview(interview_id, type):
     """
     Delete interview data from MongoDB by its _id.
     
@@ -238,7 +241,7 @@ def delete_interview(interview_id):
         bool: True if deletion was successful, False otherwise.
     """
     try:
-        collection = get_collection()
+        collection = get_collection(type)
         if collection is not None:
             result = collection.delete_one({"_id": interview_id})
             if result.deleted_count == 1:
@@ -255,7 +258,7 @@ def delete_interview(interview_id):
         logger.error(error_msg)
         return False
 
-def reanalyse_transcript(interview_id):
+def reanalyse_transcript(interview_id, type):
     """
     Reanalyse the transcript of an interview and update the MongoDB document
     
@@ -266,7 +269,7 @@ def reanalyse_transcript(interview_id):
         bool: True if reanalysis was successful, False otherwise
     """
     try:
-        collection = get_collection()
+        collection = get_collection(type)
         if collection is not None:
             # Get the interview document
             interview = collection.find_one({"_id": interview_id})
