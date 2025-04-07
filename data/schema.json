@@ -42,5 +42,6 @@
     "education": "Neutral",
     "workplace": "Positive",
     "society": "Concerned"
-  }
+  },
+  "transcript": "assistant: Hello... user: Hi my name is [redacted] and I'm [redacted] years old..."
 }
