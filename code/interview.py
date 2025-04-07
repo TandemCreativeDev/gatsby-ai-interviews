@@ -1,9 +1,6 @@
 
 import streamlit as st
 import time
-from utils import (
-    check_password,
-)
 from database import prepare_mongo_data, save_interview, test_connection, upload_local_backups
 import os
 import config
@@ -29,17 +26,6 @@ col1, col2, col3 = st.sidebar.columns([1, 2, 1])
 with col2:
     # Display smaller centered image without pixelation by retaining aspect ratio
     st.image(config.LOGO_PATH, use_container_width=True)
-
-# Check if usernames and logins are enabled
-if config.LOGINS:
-    # Check password (displays login screen)
-    pwd_correct, username = check_password()
-    if not pwd_correct:
-        st.stop()
-    else:
-        st.session_state.username = username
-else:
-    st.session_state.username = "user"
 
 # Create directories if they do not already exist
 if not os.path.exists(config.BACKUPS_DIRECTORY):
