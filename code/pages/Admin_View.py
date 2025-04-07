@@ -82,10 +82,11 @@ def render_interviews():
                     except Exception as e:
                         st.error(f"Error rendering {label}: {e}")
                 for interview in interviews:
-                    with st.expander(f"## Interview with {interview.get('username', 'Unknown')}", expanded=True):
+                    username = interview.get("username", "Unknown")
+                    with st.expander(f"## Interview with {username}", expanded=True):
                         with st.container():
                             st.markdown("### Interview Details")
-                            safe_render_field(interview, "college_name", "College Name", "text")
+                            safe_render_field(interview, "college", "College", "text")
                             safe_render_field(interview, "age_group", "Age Group", "text")
                             safe_render_field(interview, "gender", "Gender", "text")
                             time_data = interview.get("time_data")
@@ -136,7 +137,7 @@ def render_interviews():
                             st.markdown("### Transcript")
                             transcript = interview.get("transcript")
                             if transcript and isinstance(transcript, str):
-                                st.text_area("", transcript, height=200)
+                                st.text_area("", transcript, height=200, key=username)
                         st.write(" ")
                         st.write(" ")
                         cols = st.columns([1, 1])
