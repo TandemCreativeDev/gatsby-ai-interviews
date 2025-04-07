@@ -1,9 +1,6 @@
 
 import streamlit as st
 import time
-from utils import (
-    check_password,
-)
 from database import prepare_mongo_data, save_interview, test_connection, upload_local_backups
 import os
 import config
@@ -30,21 +27,13 @@ with col2:
     # Display smaller centered image without pixelation by retaining aspect ratio
     st.image(config.LOGO_PATH, use_container_width=True)
 
-# Check if usernames and logins are enabled
-if config.LOGINS:
-    # Check password (displays login screen)
-    pwd_correct, username = check_password()
-    if not pwd_correct:
-        st.stop()
-    else:
-        st.session_state.username = username
-else:
-    st.session_state.username = "user"
+# set username
+st.session_state.username = "user"
 
 # Create directories if they do not already exist
 if not os.path.exists(config.BACKUPS_DIRECTORY):
     os.makedirs(config.BACKUPS_DIRECTORY)
-upload_local_backups()
+upload_local_backups("Student")
 
 
 # Initialise session state
@@ -61,6 +50,19 @@ if "start_time" not in st.session_state:
     st.session_state.start_time_file_names = time.strftime(
         "%Y_%m_%d_%H_%M_%S", time.localtime(st.session_state.start_time)
     )
+    
+# Initialize user input fields
+if "user_info_submitted" not in st.session_state:
+    st.session_state.user_info_submitted = False
+
+if "college" not in st.session_state:
+    st.session_state.college = ""
+    
+if "age_group" not in st.session_state:
+    st.session_state.age_group = ""
+    
+if "gender" not in st.session_state:
+    st.session_state.gender = ""
 
 # # Check if interview previously completed by querying the database
 # interviews = get_interviews(username=st.session_state.username)
@@ -108,9 +110,12 @@ with col2:
                 document = prepare_mongo_data(
                     username=timestamped_username,
                     transcript=transcript,
-                    time_data=time_data
+                    time_data=time_data,
+                    college=st.session_state.college,
+                    age_group=st.session_state.age_group,
+                    gender=st.session_state.gender
                 )
-                save_interview(document)
+                save_interview(document, "Student")
                 # If MongoDB connection is restored, delete backup file
                 if test_connection():
                     backup_file = os.path.join(config.BACKUPS_DIRECTORY, f"{timestamped_username}.json")
@@ -122,16 +127,17 @@ with col2:
 
 
 # Upon rerun, display the previous conversation (except system prompt or first message)
-for message in st.session_state.messages[1:]:
-
-    if message["role"] == "assistant":
-        avatar = config.AVATAR_INTERVIEWER
-    else:
-        avatar = config.AVATAR_RESPONDENT
-    # Only display messages without codes
-    if not any(code in message["content"] for code in config.CLOSING_MESSAGES.keys()):
-        with st.chat_message(message["role"], avatar=avatar):
-            st.markdown(message["content"])
+# Only show messages if user info has been submitted
+if st.session_state.user_info_submitted:
+    for message in st.session_state.messages[1:]:
+        if message["role"] == "assistant":
+            avatar = config.AVATAR_INTERVIEWER
+        else:
+            avatar = config.AVATAR_RESPONDENT
+        # Only display messages without codes
+        if not any(code in message["content"] for code in config.CLOSING_MESSAGES.keys()):
+            with st.chat_message(message["role"], avatar=avatar):
+                st.markdown(message["content"])
 
 # Load API client
 if api == "openai":
@@ -149,8 +155,8 @@ if config.TEMPERATURE is not None:
     api_kwargs["temperature"] = config.TEMPERATURE
 
 # In case the interview history is still empty, pass system prompt to model, and
-# generate and display its first message
-if not st.session_state.messages:
+# generate and display its first message - but only if user info has been submitted
+if not st.session_state.messages and st.session_state.user_info_submitted:
 
     if api == "openai":
 
@@ -196,8 +202,33 @@ if not st.session_state.messages:
 
 
 
-# Main chat if interview is active
-if st.session_state.interview_active:
+# Display user information form if not yet submitted
+if st.session_state.interview_active and not st.session_state.user_info_submitted:
+    st.markdown("### Before we start, please provide the following information:")
+    
+    with st.form("user_info_form"):
+        college = st.text_input("College Name", value=st.session_state.college)
+        age_group = st.selectbox("Age Group", options=["", "Under 25", "25 or older"], index=0)
+        gender = st.selectbox("Gender", options=["", "Male", "Female", "Non-binary", "Prefer not to say"], index=0)
+        
+        submit_button = st.form_submit_button("Start Interview")
+        
+        if submit_button:
+            if not college:
+                st.error("Please enter your college name.")
+            elif not age_group:
+                st.error("Please select your age group.")
+            elif not gender:
+                st.error("Please select your gender.")
+            else:
+                st.session_state.college = college
+                st.session_state.age_group = age_group
+                st.session_state.gender = gender
+                st.session_state.user_info_submitted = True
+                st.rerun()
+
+# Main chat if interview is active and user info has been submitted
+elif st.session_state.interview_active and st.session_state.user_info_submitted:
 
     # Chat input and message for respondent
     if message_respondent := st.chat_input("Your message here"):
@@ -294,9 +325,12 @@ if st.session_state.interview_active:
                         username=f"{st.session_state.username}_backup_{st.session_state.start_time_file_names}",
                         transcript=transcript,
                         time_data=time_data,
+                        college=st.session_state.college,
+                        age_group=st.session_state.age_group,
+                        gender=st.session_state.gender,
                         backup=True
                     )
-                    save_interview(document)
+                    save_interview(document, "Student")
                 except:
                     pass
 
@@ -332,9 +366,12 @@ if st.session_state.interview_active:
                             document = prepare_mongo_data(
                                 username=timestamped_username,
                                 transcript=transcript,
-                                time_data=time_data
+                                time_data=time_data,
+                                college=st.session_state.college,
+                                age_group=st.session_state.age_group,
+                                gender=st.session_state.gender
                             )
-                            success = save_interview(document)
+                            success = save_interview(document, "Student")
                             if success:
                                 st.success("✅ Interview saved, you may now close this page.")
                             else:
