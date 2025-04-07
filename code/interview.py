@@ -27,6 +27,9 @@ with col2:
     # Display smaller centered image without pixelation by retaining aspect ratio
     st.image(config.LOGO_PATH, use_container_width=True)
 
+# set username
+st.session_state.username = "user"
+
 # Create directories if they do not already exist
 if not os.path.exists(config.BACKUPS_DIRECTORY):
     os.makedirs(config.BACKUPS_DIRECTORY)
