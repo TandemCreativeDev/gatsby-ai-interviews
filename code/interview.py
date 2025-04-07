@@ -66,8 +66,8 @@ if "start_time" not in st.session_state:
 if "user_info_submitted" not in st.session_state:
     st.session_state.user_info_submitted = False
 
-if "college_name" not in st.session_state:
-    st.session_state.college_name = ""
+if "college" not in st.session_state:
+    st.session_state.college = ""
     
 if "age_group" not in st.session_state:
     st.session_state.age_group = ""
@@ -122,7 +122,7 @@ with col2:
                     username=timestamped_username,
                     transcript=transcript,
                     time_data=time_data,
-                    college_name=st.session_state.college_name,
+                    college=st.session_state.college,
                     age_group=st.session_state.age_group,
                     gender=st.session_state.gender
                 )
@@ -218,21 +218,21 @@ if st.session_state.interview_active and not st.session_state.user_info_submitte
     st.markdown("### Before we start, please provide the following information:")
     
     with st.form("user_info_form"):
-        college_name = st.text_input("College Name", value=st.session_state.college_name)
+        college = st.text_input("College Name", value=st.session_state.college)
         age_group = st.selectbox("Age Group", options=["", "Under 25", "25 or older"], index=0)
         gender = st.selectbox("Gender", options=["", "Male", "Female", "Non-binary", "Prefer not to say"], index=0)
         
         submit_button = st.form_submit_button("Start Interview")
         
         if submit_button:
-            if not college_name:
+            if not college:
                 st.error("Please enter your college name.")
             elif not age_group:
                 st.error("Please select your age group.")
             elif not gender:
                 st.error("Please select your gender.")
             else:
-                st.session_state.college_name = college_name
+                st.session_state.college = college
                 st.session_state.age_group = age_group
                 st.session_state.gender = gender
                 st.session_state.user_info_submitted = True
@@ -336,7 +336,7 @@ elif st.session_state.interview_active and st.session_state.user_info_submitted:
                         username=f"{st.session_state.username}_backup_{st.session_state.start_time_file_names}",
                         transcript=transcript,
                         time_data=time_data,
-                        college_name=st.session_state.college_name,
+                        college=st.session_state.college,
                         age_group=st.session_state.age_group,
                         gender=st.session_state.gender,
                         backup=True
@@ -378,7 +378,7 @@ elif st.session_state.interview_active and st.session_state.user_info_submitted:
                                 username=timestamped_username,
                                 transcript=transcript,
                                 time_data=time_data,
-                                college_name=st.session_state.college_name,
+                                college=st.session_state.college,
                                 age_group=st.session_state.age_group,
                                 gender=st.session_state.gender
                             )
