@@ -66,7 +66,7 @@ def generate_transcript_summary(transcript):
         ```json
         {schema}
         ```
-        For the last key "transcript", you must redact personal data or sensitive, confidential or even explicit information that the user may inadvertently disclose from the transcript and return it with [redacted: comment if this is data we have saved / no comment if this is data we are not supposed to be recording]. If it is information we extract (if over 25, gender, study field, career aspiration and college), then leave a comment just to indicate that. Be very thorough, some information we definetely don't want to see: a specific age, a name, an address or city lived in, a phone number or email address, any pronouns used about themselves or others that would reveal gender, what year they are in at college, a specific course they are studying, any names of people they know or teachers, any names of places they visited, any names of things they own or use, any information about their job or education, details surrounding physical or mental health. Once you have gone through the full transcript, go again a second time on the anonymised version and see if you can pick up any additional information that you missed the first time.
+        For the last key "transcript", you must redact personal data or sensitive, confidential or even explicit information that the user may inadvertently disclose from the transcript and return it with [redacted] in the place of the censored information. Be mindful not to redact information that does not fall into this category as the transcripts should remain readable.
         Here is the transcript to analyse:
         
         {transcript}
