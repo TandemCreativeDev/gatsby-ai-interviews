@@ -1,0 +1,102 @@
+{
+  "educational_setting": {
+    "institution_type": "string",
+    "department_or_faculty": "string",
+    "teaching_level": "string",
+    "location": "string"
+  },
+  "ai_integration_strategy": {
+    "current_usage": "boolean",
+    "implementation_timeframe": "string",
+    "proposed_applications": ["string"],
+    "adoption_approach": "string"
+  },
+  "teaching_and_learning": {
+    "curriculum_enhancement": {
+      "subject_specific_applications": ["string"],
+      "differentiation_strategies": ["string"],
+      "assessment_methods": ["string"]
+    },
+    "pedagogical_impact": {
+      "teacher_role_changes": ["string"],
+      "student_engagement": "string",
+      "learning_outcomes": ["string"]
+    },
+    "practical_applications": {
+      "classroom_activities": ["string"],
+      "workshop_integration": ["string"],
+      "virtual_environments": ["string"]
+    }
+  },
+  "stakeholder_perspectives": {
+    "teacher_views": {
+      "benefits": ["string"],
+      "concerns": ["string"],
+      "adoption_barriers": ["string"],
+      "training_needs": ["string"]
+    },
+    "student_impact": {
+      "accessibility_improvements": ["string"],
+      "skills_development": ["string"],
+      "potential_challenges": ["string"]
+    },
+    "support_staff_role": {
+      "changing_responsibilities": ["string"],
+      "new_opportunities": ["string"],
+      "training_requirements": ["string"]
+    },
+    "employer_engagement": {
+      "industry_relevance": "string",
+      "workplace_preparation": ["string"],
+      "collaborative_initiatives": ["string"]
+    }
+  },
+  "implementation_considerations": {
+    "resource_requirements": {
+      "technical_infrastructure": ["string"],
+      "software_needs": ["string"],
+      "financial_investment": "string",
+      "timeframe": "string"
+    },
+    "governance_and_ethics": {
+      "policy_framework": "string",
+      "data_protection": ["string"],
+      "ethical_guidelines": ["string"],
+      "oversight_responsibility": "string"
+    },
+    "risks_and_mitigations": {
+      "identified_risks": ["string"],
+      "mitigation_strategies": ["string"],
+      "success_metrics": ["string"]
+    }
+  },
+  "specialised_applications": {
+    "supporting_high_needs": {
+      "ehcp_target_support": ["string"],
+      "accessibility_features": ["string"],
+      "personalisation_capabilities": ["string"]
+    },
+    "vocational_education": {
+      "industry_specific_tools": ["string"],
+      "practical_skills_development": ["string"],
+      "workplace_simulation": ["string"]
+    },
+    "creative_disciplines": {
+      "design_applications": ["string"],
+      "multimedia_integration": ["string"],
+      "innovative_approaches": ["string"]
+    }
+  },
+  "future_outlook": {
+    "five_year_projection": "string",
+    "evolving_technologies": ["string"],
+    "anticipated_challenges": ["string"],
+    "strategic_priorities": ["string"]
+  },
+  "sentiment_analysis": {
+    "overall": "string",
+    "enthusiasm_for_adoption": "string",
+    "concern_level": "string",
+    "readiness_assessment": "string"
+  }
+}
