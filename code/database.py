@@ -258,12 +258,13 @@ def delete_interview(interview_id, type):
         logger.error(error_msg)
         return False
 
-def reanalyse_transcript(interview_id, type):
+def reanalyse_transcript(interview_id, type="Student"):
     """
     Reanalyse the transcript of an interview and update the MongoDB document
     
     Args:
         interview_id: The _id of the interview document
+        type: The type of transcript (Student or Staff)
         
     Returns:
         bool: True if reanalysis was successful, False otherwise
@@ -283,8 +284,8 @@ def reanalyse_transcript(interview_id, type):
                 logger.warning(f"No transcript found for interview with id: {interview_id}")
                 return False
                 
-            # Generate a new analysis
-            analysis = generate_transcript_summary(transcript)
+            # Generate a new analysis based on type
+            analysis = generate_transcript_summary(transcript, type)
             
             # Update the document in MongoDB
             result = collection.update_one(
@@ -293,16 +294,16 @@ def reanalyse_transcript(interview_id, type):
             )
             
             if result.modified_count == 1:
-                logger.info(f"Successfully reanalyzed interview with id: {interview_id}")
+                logger.info(f"Successfully reanalyzed {type} interview with id: {interview_id}")
                 return True
             else:
-                logger.warning(f"Failed to update interview with id: {interview_id}")
+                logger.warning(f"Failed to update {type} interview with id: {interview_id}")
                 return False
         else:
-            logger.error("Failed to get MongoDB collection for reanalysis")
+            logger.error(f"Failed to get MongoDB collection for {type} reanalysis")
             return False
     except Exception as e:
-        error_msg = f"Failed to reanalyze interview data: {e}"
+        error_msg = f"Failed to reanalyze {type} interview data: {e}"
         logger.error(error_msg)
         return False
 
