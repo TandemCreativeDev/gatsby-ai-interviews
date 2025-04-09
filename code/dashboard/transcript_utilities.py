@@ -192,19 +192,11 @@ def render_staff_interviews(container):
                         # Responses section
                         with st.container():
                             responses = interview.get("responses")
-                            staff_analysis = interview.get("staff_analysis")
-                            isAnalysed = (responses and isinstance(responses, dict)) or (staff_analysis and isinstance(staff_analysis, dict))
+                            isAnalysed = responses and isinstance(responses, dict)
                             if responses and isinstance(responses, dict):
-                                st.markdown("### Responses")
-                                st.markdown(render_dict_as_bullets(responses))
-                        
-                        # Staff analysis section
-                        with st.container():
-                            staff_analysis = interview.get("staff_analysis")
-                            if staff_analysis and isinstance(staff_analysis, dict):
                                 title = render_analysis_date(interview.get("analyzed_at"), "Staff Analysis")
                                 st.markdown(title)
-                                st.markdown(render_dict_as_bullets(staff_analysis))
+                                st.markdown(render_dict_as_bullets(responses))
                         
                         # Transcript section
                         with st.container():
