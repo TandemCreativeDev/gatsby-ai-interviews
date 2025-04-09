@@ -181,7 +181,10 @@ def generate_staff_transcript_summary(transcript):
         if use_mock_data:
             # Return mock data for testing without API
             print("Using mock data instead of calling API")
-            return {"staff_analysis": staff_schema, "analyzed_at": datetime.datetime.now().isoformat()}
+            # The staff_schema should already have the responses structure
+            mock_data = staff_schema.copy()
+            mock_data["analyzed_at"] = datetime.datetime.now().isoformat()
+            return mock_data
             
         # Initialize API client
         client = OpenAI(api_key=st.secrets["API_KEY_OPENAI"])
@@ -230,11 +233,9 @@ def generate_staff_transcript_summary(transcript):
         # Parse the response as JSON
         analysis_json = json.loads(result)
         
-        # Create final response structure with staff_analysis key
-        summary_json = {
-            "staff_analysis": analysis_json,
-            "analyzed_at": datetime.datetime.now().isoformat()
-        }
+        # Just add the analyzed_at timestamp - analysis_json already has responses structure
+        analysis_json["analyzed_at"] = datetime.datetime.now().isoformat()
+        summary_json = analysis_json
         
         # Print the summary to console for debugging
         print("Staff Transcript Analysis:")
@@ -246,17 +247,17 @@ def generate_staff_transcript_summary(transcript):
         print(f"Error generating staff transcript analysis: {str(e)}")
         import traceback
         traceback.print_exc()
-        # Return an empty structure in case of error
+        # Return an empty structure in case of error, with responses key
         return {
-            "staff_analysis": {
+            "responses": {
                 "educational_setting": {},
                 "ai_integration_strategy": {},
                 "teaching_and_learning": {},
                 "stakeholder_perspectives": {},
                 "implementation_considerations": {},
                 "specialised_applications": {},
-                "future_outlook": {},
-                "sentiment_analysis": {}
+                "future_outlook": {}
             },
+            "sentiment_analysis": {},
             "analyzed_at": datetime.datetime.now().isoformat()
         }
