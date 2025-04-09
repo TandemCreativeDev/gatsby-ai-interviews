@@ -41,3 +41,32 @@ selected_collection = st.selectbox(
     options=collection_options,
     index=0 if collection_options else None
 )
+
+# Process button to retrieve the summaries
+if st.button("Retrieve Summaries"):
+    if selected_collection:
+        with st.spinner("Retrieving interview summaries..."):
+            # Get the database
+            db = get_database()
+            if db is not None:
+                # Access the collection directly
+                collection = db[selected_collection]
+                
+                # Query all documents
+                documents = list(collection.find({}))
+                
+                if documents:
+                    # Store the full documents in session state
+                    st.session_state['interviews'] = documents
+                    
+                    # Display count of retrieved documents
+                    st.success(f"Successfully retrieved {len(documents)} documents from the '{selected_collection}' collection.")
+                    
+                    # Show the first document as a sample
+                    if len(documents) > 0:
+                        st.subheader("Sample Document Structure")
+                        st.json(documents[0])
+                else:
+                    st.warning(f"No documents found in the '{selected_collection}' collection.")
+    else:
+        st.error("Please select a collection to retrieve summaries from.")
