@@ -49,18 +49,15 @@ def generate_meta_summary(interviews):
     """
     try:
         # Check if API key is available
-        use_mock_data = False
         try:
             if "API_KEY_OPENAI" not in st.secrets:
-                print("WARNING: API_KEY_OPENAI not found in secrets")
-                use_mock_data = True
+                error_msg = "ERROR: API_KEY_OPENAI not found in secrets. OpenAI credentials are required."
+                st.error(error_msg)
+                raise ValueError(error_msg)
         except Exception as secrets_error:
-            print(f"Error accessing secrets: {str(secrets_error)}")
-            use_mock_data = True
-            
-        if use_mock_data:
-            # Return mock data for testing without API
-            return "This is a mock meta-summary for testing purposes. The interviews reveal students are generally positive about AI in education, though concerns exist about over-reliance. Most use AI for research and coding help, while expressing interest in improved AI tools for personalised learning."
+            error_msg = f"Error accessing OpenAI credentials: {str(secrets_error)}"
+            st.error(error_msg)
+            raise ValueError(error_msg)
             
         # Initialize API client
         client = OpenAI(api_key=st.secrets["API_KEY_OPENAI"])
@@ -115,11 +112,13 @@ def generate_meta_summary(interviews):
         return result
         
     except Exception as e:
-        print(f"Error generating meta-summary: {e}")
+        error_msg = f"Error generating meta-summary: {e}"
+        print(error_msg)
         import traceback
         traceback.print_exc()
-        # Return error message in case of failure
-        return "Failed to generate summary due to an error."
+        # Raise the error instead of returning a fallback message
+        st.error(error_msg)
+        raise
 
 # Get available collections
 db = get_database()
@@ -127,11 +126,13 @@ if db is not None:
     # This returns a list of collections in the database
     available_collections = test_connection()
     if not available_collections:
-        st.error("No collections found in the database. Please check your MongoDB connection.")
-        st.stop()
+        error_msg = "No collections found in the database. Please check your MongoDB connection."
+        st.error(error_msg)
+        raise ValueError(error_msg)
 else:
-    st.error("Could not connect to the database. Please check your MongoDB connection.")
-    st.stop()
+    error_msg = "Could not connect to the database. Please check your MongoDB connection."
+    st.error(error_msg)
+    raise ValueError(error_msg)
 
 # Collection selection dropdown
 collection_options = available_collections
