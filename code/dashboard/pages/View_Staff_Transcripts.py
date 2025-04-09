@@ -58,7 +58,7 @@ def delete_and_refresh(interview_id, type="Staff"):
 def reanalyse_and_refresh(interview_id, type="Staff"):
     from database import reanalyse_transcript
     with st.spinner("Analysing transcript..."):
-        if reanalyse_transcript(interview_id):
+        if reanalyse_transcript(interview_id, type):
             st.success("Transcript analysed successfully.")
         else:
             st.error("Failed to analyse transcript.")
@@ -115,15 +115,16 @@ def render_interviews():
                                 st.write(f"Completed: {tick}")
                         with st.container():
                             responses = interview.get("responses")
-                            isAnalysed = responses and isinstance(responses, dict)
-                            if isAnalysed:
+                            staff_analysis = interview.get("staff_analysis")
+                            isAnalysed = (responses and isinstance(responses, dict)) or (staff_analysis and isinstance(staff_analysis, dict))
+                            if responses and isinstance(responses, dict):
                                 st.markdown("### Responses")
                                 st.markdown(render_dict_as_bullets(responses))
                         with st.container():
-                            sentiments = interview.get("sentiment_analysis")
-                            if sentiments and isinstance(sentiments, dict):
+                            staff_analysis = interview.get("staff_analysis")
+                            if staff_analysis and isinstance(staff_analysis, dict):
                                 analyzed_at = interview.get("analyzed_at")
-                                title = "### Sentiment Analysis"
+                                title = "### Staff Analysis"
                                 if analyzed_at:
                                     try:
                                         if isinstance(analyzed_at, str):
@@ -134,7 +135,7 @@ def render_interviews():
                                     except Exception as e:
                                         print(f"Error formatting analyzed_at date: {e}")
                                 st.markdown(title)
-                                st.markdown(render_dict_as_bullets(sentiments))
+                                st.markdown(render_dict_as_bullets(staff_analysis))
                         with st.container():
                             st.markdown("### Transcript")
                             transcript = interview.get("transcript")
