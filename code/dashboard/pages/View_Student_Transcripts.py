@@ -58,7 +58,7 @@ def delete_and_refresh(interview_id, type="Student"):
 def reanalyse_and_refresh(interview_id, type="Student"):
     from database import reanalyse_transcript
     with st.spinner("Analysing transcript..."):
-        if reanalyse_transcript(interview_id):
+        if reanalyse_transcript(interview_id, type):
             st.success("Transcript analysed successfully.")
         else:
             st.error("Failed to analyse transcript.")
