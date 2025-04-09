@@ -122,7 +122,8 @@ def render_student_interviews(container):
                             responses = interview.get("responses")
                             isAnalysed = responses and isinstance(responses, dict)
                             if isAnalysed:
-                                st.markdown("### Responses")
+                                title = render_analysis_date(interview.get("analyzed_at"), "Student Analysis")
+                                st.markdown(title)
                                 st.markdown(render_dict_as_bullets(responses))
                         
                         # Sentiment analysis section
