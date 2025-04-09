@@ -69,16 +69,12 @@ def generate_meta_summary(interviews):
             
             # For staff interviews (based on selected collection name)
             if "staff" in selected_collection.lower():
-                # If it's a staff interview, only keep the responses field if it exists
+                # Check if staff interview has responses
                 if "responses" in interview_copy:
-                    staff_only = {"responses": interview_copy["responses"]}
-                    if "sentiment_analysis" in interview_copy:
-                        staff_only["sentiment_analysis"] = interview_copy["sentiment_analysis"]
-                    if "analyzed_at" in interview_copy:
-                        staff_only["analyzed_at"] = interview_copy["analyzed_at"]
-                    if "username" in interview_copy:
-                        staff_only["username"] = interview_copy["username"]
-                    cleaned_interviews.append(staff_only)
+                    # Remove the transcript to save tokens, but keep all other metadata
+                    if "transcript" in interview_copy:
+                        del interview_copy["transcript"]
+                    cleaned_interviews.append(interview_copy)
                 else:
                     # Skip staff interviews without responses
                     continue
