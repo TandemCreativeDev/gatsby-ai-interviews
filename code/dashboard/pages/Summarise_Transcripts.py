@@ -24,12 +24,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from login import setup_admin_page
 
 # Initialize the admin page with login
-if not setup_admin_page("Summarise All Transcripts | Gatsby AI Interview"):
+if not setup_admin_page("Summarise Transcripts | Gatsby AI Interview"):
     st.stop()
 
 st.write("Generate a summarised overview of all transcripts in a collection.")
 
-st.header("Collection Summary")
+st.header("Transcript Collection Summary")
 
 # Import after page header setup to ensure proper error handling
 import config
@@ -62,40 +62,84 @@ def generate_meta_summary(interviews):
         # Initialize API client
         client = OpenAI(api_key=st.secrets["API_KEY_OPENAI"])
         
-        # Create a deep copy and remove transcript field to reduce token usage
+        # Create a deep copy and customize based on collection type
         cleaned_interviews = []
         for interview in interviews:
             interview_copy = copy.deepcopy(interview)
-            if "transcript" in interview_copy:
-                del interview_copy["transcript"]
-            cleaned_interviews.append(interview_copy)
+            
+            # For staff interviews (based on selected collection name)
+            if "staff" in selected_collection.lower():
+                # Check if staff interview has responses
+                if "responses" in interview_copy:
+                    # Remove the transcript to save tokens, but keep all other metadata
+                    if "transcript" in interview_copy:
+                        del interview_copy["transcript"]
+                    cleaned_interviews.append(interview_copy)
+                else:
+                    # Skip staff interviews without responses
+                    continue
+            else:
+                # For student interviews, remove the transcript to save tokens
+                if "transcript" in interview_copy:
+                    del interview_copy["transcript"]
+                cleaned_interviews.append(interview_copy)
         
-        # Create the prompt for meta-summary
-        system_prompt = """You are an expert at analysing interview data and creating incisive, insightful summaries.
-        Your task is to create a 200-word plain text summary that captures the key patterns and insights across all respondents.
-        Focus on the most prevalent themes, notable patterns, and significant insights, especially those related to demographics like age and college.
-        Your summary should be in British English.
-        """
+        # Determine if we're summarizing staff or student interviews
+        is_staff_collection = "staff" in selected_collection.lower()
         
-        # Convert interview data to JSON format for the prompt using custom encoder
-        interviews_json = json.dumps(cleaned_interviews, cls=MongoJSONEncoder)
-        
-        user_prompt = f"""
-        Analyse the following collection of interview documents and create an incisive 200-word plain text summary 
-        that captures the key patterns and insights across all respondents.
-        
-        Here are the interview documents to analyse:
-        
-        {interviews_json}
-        
-        IMPORTANT INSTRUCTIONS:
-        1. Create a plain text summary of approximately 200 words.
-        2. Focus on key patterns, trends, and insights that emerge across multiple respondents.
-        3. Specifically highlight any patterns related to demographics (age, college, gender) if present.
-        4. Highlight any notable consensus or divergence in opinions.
-        5. Use British English spelling (e.g., "summarise" not "summarize").
-        6. Do not structure the response as JSON or with headers - just plain text.
-        """
+        # Create the prompt for meta-summary based on collection type
+        if is_staff_collection:
+            system_prompt = """You are an expert at analysing staff interview data about AI in education and creating incisive, insightful summaries.
+            Your task is to create a 200-word plain text summary that captures the key patterns and insights across all staff respondents.
+            Focus on the most prevalent themes regarding AI integration in education, notable patterns in the teaching approaches, and significant institutional considerations.
+            Your summary should be in British English.
+            """
+            
+            # Convert interview data to JSON format for the prompt using custom encoder
+            interviews_json = json.dumps(cleaned_interviews, cls=MongoJSONEncoder)
+            
+            user_prompt = f"""
+            Analyse the following collection of staff interview analyses about AI in education and create an incisive 200-word plain text summary 
+            that captures the key patterns and insights across all staff respondents.
+            
+            Here are the staff interview analyses to summarise:
+            
+            {interviews_json}
+            
+            IMPORTANT INSTRUCTIONS:
+            1. Create a plain text summary of approximately 200 words.
+            2. Focus on key patterns, trends, and insights that emerge across multiple staff respondents.
+            3. Highlight patterns related to educational settings, AI integration strategies, and implementation considerations.
+            4. Emphasize notable agreements or differences in perspectives on adopting AI in educational contexts.
+            5. Use British English spelling (e.g., "summarise" not "summarize").
+            6. Do not structure the response as JSON or with headers - just plain text.
+            """
+        else:
+            system_prompt = """You are an expert at analysing student interview data and creating incisive, insightful summaries.
+            Your task is to create a 200-word plain text summary that captures the key patterns and insights across all student respondents.
+            Focus on the most prevalent themes, notable patterns, and significant insights, especially those related to demographics like age and college.
+            Your summary should be in British English.
+            """
+            
+            # Convert interview data to JSON format for the prompt using custom encoder
+            interviews_json = json.dumps(cleaned_interviews, cls=MongoJSONEncoder)
+            
+            user_prompt = f"""
+            Analyse the following collection of student interview documents and create an incisive 200-word plain text summary 
+            that captures the key patterns and insights across all respondents.
+            
+            Here are the interview documents to analyse:
+            
+            {interviews_json}
+            
+            IMPORTANT INSTRUCTIONS:
+            1. Create a plain text summary of approximately 200 words.
+            2. Focus on key patterns, trends, and insights that emerge across multiple student respondents.
+            3. Specifically highlight any patterns related to demographics (age, college, gender) if present.
+            4. Highlight any notable consensus or divergence in opinions.
+            5. Use British English spelling (e.g., "summarise" not "summarize").
+            6. Do not structure the response as JSON or with headers - just plain text.
+            """
         
         # Call OpenAI to generate the meta-summary
         response = client.chat.completions.create(
@@ -162,18 +206,6 @@ if st.button("Retrieve Interviews"):
                     
                     # Display count of retrieved documents
                     st.success(f"Successfully retrieved {len(documents)} interviews from the '{selected_collection}' collection.")
-                    
-                    # Show the first document as a sample (with transcript hidden)
-                    if len(documents) > 0:
-                        sample_doc = copy.deepcopy(documents[0])
-                        if "transcript" in sample_doc:
-                            sample_doc["transcript"] = "[Transcript content hidden to save space]"
-                        
-                        st.subheader("Sample Interview Structure")
-                        # Convert to JSON with custom encoder first
-                        sample_json = json.dumps(sample_doc, cls=MongoJSONEncoder)
-                        # Parse back to display with st.json
-                        st.json(json.loads(sample_json))
                 else:
                     st.warning(f"No interviews found in the '{selected_collection}' collection.")
     else:
@@ -190,13 +222,20 @@ if 'interviews' in st.session_state and st.button("Generate Summary"):
         # Store and display summary
         st.session_state['meta_summary'] = meta_summary
         
-        st.subheader("Summary of All Interviews")
+        # Determine collection type for display
+        if "staff" in selected_collection.lower():
+            st.subheader("Summary of Staff Interviews")
+            file_prefix = "staff"
+        else:
+            st.subheader("Summary of Student Interviews")
+            file_prefix = "student"
+            
         st.write(meta_summary)
         
         # Add download button for the summary
         st.download_button(
             label="Download Summary",
             data=meta_summary,
-            file_name=f"{selected_collection}_summary.txt",
+            file_name=f"{file_prefix}_interview_summary.txt",
             mime="text/plain"
         )
