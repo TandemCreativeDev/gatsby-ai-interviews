@@ -74,9 +74,9 @@ def generate_meta_summary(interviews):
             cleaned_interviews.append(interview_copy)
         
         # Create the prompt for meta-summary
-        system_prompt = """You are an expert at analysing interview data and creating concise, insightful summaries.
-        Your task is to create a 100-word plain text summary that captures the key patterns and insights across all respondents.
-        Focus on the most prevalent themes, notable patterns, and significant insights.
+        system_prompt = """You are an expert at analysing interview data and creating incisive, insightful summaries.
+        Your task is to create a 200-word plain text summary that captures the key patterns and insights across all respondents.
+        Focus on the most prevalent themes, notable patterns, and significant insights, especially those related to demographics like age and college.
         Your summary should be in British English.
         """
         
@@ -84,7 +84,7 @@ def generate_meta_summary(interviews):
         interviews_json = json.dumps(cleaned_interviews, cls=MongoJSONEncoder)
         
         user_prompt = f"""
-        Analyse the following collection of interview documents and create a concise 100-word plain text summary 
+        Analyse the following collection of interview documents and create an incisive 200-word plain text summary 
         that captures the key patterns and insights across all respondents.
         
         Here are the interview documents to analyse:
@@ -92,11 +92,12 @@ def generate_meta_summary(interviews):
         {interviews_json}
         
         IMPORTANT INSTRUCTIONS:
-        1. Create a plain text summary of approximately 100 words.
+        1. Create a plain text summary of approximately 200 words.
         2. Focus on key patterns, trends, and insights that emerge across multiple respondents.
-        3. Highlight any notable consensus or divergence in opinions.
-        4. Use British English spelling (e.g., "summarise" not "summarize").
-        5. Do not structure the response as JSON or with headers - just plain text.
+        3. Specifically highlight any patterns related to demographics (age, college, gender) if present.
+        4. Highlight any notable consensus or divergence in opinions.
+        5. Use British English spelling (e.g., "summarise" not "summarize").
+        6. Do not structure the response as JSON or with headers - just plain text.
         """
         
         # Call OpenAI to generate the meta-summary
