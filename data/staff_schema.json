@@ -220,7 +220,7 @@
       ]
     },
     "sentiment_analysis": {
-      "overall_attitude": "Enthusiastic",
+      "overall": "Enthusiastic",
       "enthusiasm_for_adoption": "High",
       "concern_level": "Moderate - primarily about implementation",
       "readiness_assessment": "Ready with proper support and resources"
