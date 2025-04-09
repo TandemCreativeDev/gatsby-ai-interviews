@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import login functionality from the centralized login module
 from login import setup_admin_page
-from transcript_utilities import initialize_session_state, render_student_interviews
+from transcript_utils import initialize_session_state, render_student_interviews
 
 # Initialize the admin page with login
 if not setup_admin_page("View Student Transcripts | Gatsby AI Interview"):
