@@ -41,13 +41,13 @@ from database import get_database, test_connection
 def generate_meta_summary(interviews):
     """
     Takes a list of interview documents (with transcripts removed)
-    and generates a 400-word plain text summary using OpenAI.
+    and generates a 800-word plain text summary using OpenAI.
     
     Args:
         interviews (list): List of interview documents
         
     Returns:
-        str: 400-word plain text meta-summary
+        str: 800-word plain text meta-summary
     """
     try:
         # Check if API key is available
@@ -92,7 +92,7 @@ def generate_meta_summary(interviews):
         # Create the prompt for meta-summary based on collection type
         if is_staff_collection:
             system_prompt = """You are an expert at analysing staff interview data about AI in education and creating incisive, insightful summaries.
-            Your task is to create a 400-word plain text summary that captures the key patterns and insights across all staff respondents.
+            Your task is to create a 800-word plain text summary that captures the key patterns and insights across all staff respondents.
             Focus on the most prevalent themes regarding AI integration in education, notable patterns in the teaching approaches, and significant institutional considerations.
             Include breakdowns of participant responses where demographic information is available, such as age, gender, and subjects taught.
             Your summary should be in British English.
@@ -102,7 +102,7 @@ def generate_meta_summary(interviews):
             interviews_json = json.dumps(cleaned_interviews, cls=MongoJSONEncoder)
             
             user_prompt = f"""
-            Analyse the following collection of staff interview analyses about AI in education and create an incisive 400-word plain text summary 
+            Analyse the following collection of staff interview analyses about AI in education and create an incisive 800-word plain text summary 
             that captures the key patterns and insights across all staff respondents.
             
             Here are the staff interview analyses to summarise:
@@ -110,7 +110,7 @@ def generate_meta_summary(interviews):
             {interviews_json}
             
             IMPORTANT INSTRUCTIONS:
-            1. Create a plain text summary of approximately 400 words.
+            1. Create a plain text summary of approximately 800 words.
             2. Focus on key patterns, trends, and insights that emerge across multiple staff respondents.
             3. Include demographic breakdowns where available (age, gender, subjects taught).
             4. Highlight patterns related to educational settings, AI integration strategies, and implementation considerations.
@@ -120,7 +120,7 @@ def generate_meta_summary(interviews):
             """
         else:
             system_prompt = """You are an expert at analysing student interview data and creating incisive, insightful summaries.
-            Your task is to create a 400-word plain text summary that captures the key patterns and insights across all student respondents.
+            Your task is to create a 800-word plain text summary that captures the key patterns and insights across all student respondents.
             Focus on the most prevalent themes, notable patterns, and significant insights.
             Include detailed breakdowns of participant responses based on demographics like age, gender, and college where that information is available.
             Your summary should be in British English.
@@ -130,7 +130,7 @@ def generate_meta_summary(interviews):
             interviews_json = json.dumps(cleaned_interviews, cls=MongoJSONEncoder)
             
             user_prompt = f"""
-            Analyse the following collection of student interview documents and create an incisive 400-word plain text summary 
+            Analyse the following collection of student interview documents and create an incisive 800-word plain text summary 
             that captures the key patterns and insights across all respondents.
             
             Here are the interview documents to analyse:
@@ -138,7 +138,7 @@ def generate_meta_summary(interviews):
             {interviews_json}
             
             IMPORTANT INSTRUCTIONS:
-            1. Create a plain text summary of approximately 400 words.
+            1. Create a plain text summary of approximately 800 words.
             2. Focus on key patterns, trends, and insights that emerge across multiple student respondents.
             3. Include detailed demographic breakdowns of responses based on age, college, and gender where available.
             4. Present insights on how different demographic groups may have different perspectives or experiences.
