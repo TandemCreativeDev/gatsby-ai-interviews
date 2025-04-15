@@ -58,7 +58,7 @@ if submit:
         if type_radio == "Staff":
             document["role"] = role
         from database import save_interview
-        if save_interview(document, type_radio):
+        if save_interview(document, type_radio, update_if_exists=False):
             st.success("Transcript uploaded successfully.")
         else:
             st.error("Failed to upload transcript.")
