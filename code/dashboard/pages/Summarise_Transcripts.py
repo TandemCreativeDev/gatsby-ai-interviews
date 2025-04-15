@@ -10,6 +10,9 @@ import streamlit as st
 from bson import ObjectId
 from openai import OpenAI
 
+# Add parent directory to path so we can import from parent modules
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # Import login functionality from the centralised login module
 from login import setup_admin_page
 
@@ -22,10 +25,6 @@ class MongoJSONEncoder(json.JSONEncoder):
         if isinstance(obj, datetime):
             return obj.isoformat()
         return super().default(obj)
-
-
-# Add parent directory to path so we can import from parent modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Initialize the admin page with login
 if not setup_admin_page("Summarise Transcripts | Gatsby AI Interview"):

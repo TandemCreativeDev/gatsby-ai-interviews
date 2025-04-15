@@ -2,11 +2,11 @@ import streamlit as st
 import os
 import sys
 
-# Import login functionality from the centralized login module
-from login import setup_admin_page
-
 # Add parent directory to path so we can import from parent modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import login functionality from the centralized login module
+from login import setup_admin_page
 
 # Initialize the admin page with login
 if not setup_admin_page("Add Transcript | Gatsby AI Interview"):
