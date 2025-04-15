@@ -79,7 +79,15 @@ def test_connection():
     return []
 
 
-def prepare_mongo_data(username, transcript, time_data, college="", age_group="", gender="", backup=False):
+def prepare_mongo_data(
+        username,
+        transcript,
+        time_data,
+        college="",
+        age_group="",
+        gender="",
+        backup=False
+):
     """
     Prepare data for MongoDB
 
@@ -88,7 +96,7 @@ def prepare_mongo_data(username, transcript, time_data, college="", age_group=""
         transcript (str): Interview transcript
         time_data (dict): Time-related data for the interview
         college (str, optional): Name of the college. Defaults to "".
-        age_group (str, optional): Age group (Under 25 or 25 or older). Defaults to "".
+        age_group (str, optional): Age group (Under 25 or 25 or older).
         gender (str, optional): Gender selection. Defaults to "".
         backup (bool, optional): Whether this is a backup. Defaults to False.
 
@@ -161,11 +169,15 @@ def save_interview(document, type, update_if_exists=True):
                 if update_if_exists:
                     st.session_state.mongo_doc_id = updated_doc["_id"]
                 logger.info(
-                    f"Successfully saved interview data for user: {document['username']}")
+                    "Successfully saved interview data for user: "
+                    f"{document['username']}"
+                )
                 return True
             else:
                 logger.warning(
-                    f"Failed to update interview data for user: {document['username']}")
+                    "Failed to update interview data for user: "
+                    f"{document['username']}"
+                )
                 _create_backup(document)
                 return False
         else:
@@ -213,7 +225,8 @@ def get_interviews(username=None, limit=100, type="Student"):
 
     Args:
         username (str, optional): Filter by username. Defaults to None.
-        limit (int, optional): Maximum number of records to return. Defaults to 100.
+        limit (int, optional): Maximum number of records to return. 
+        Defaults to 100.
 
     Returns:
         list: List of interview documents
@@ -300,7 +313,8 @@ def reanalyse_transcript(interview_id, type="Student"):
             transcript = interview.get("transcript")
             if not transcript:
                 logger.warning(
-                    f"No transcript found for interview with id: {interview_id}")
+                    "No transcript found for interview with id: "
+                    f"{interview_id}")
                 return False
 
             # Generate a new analysis based on type
@@ -314,11 +328,14 @@ def reanalyse_transcript(interview_id, type="Student"):
 
             if result.modified_count == 1:
                 logger.info(
-                    f"Successfully reanalyzed {type} interview with id: {interview_id}")
+                    f"Successfully reanalyzed {type} interview with id: "
+                    f"{interview_id}"
+                )
                 return True
             else:
                 logger.warning(
-                    f"Failed to update {type} interview with id: {interview_id}")
+                    f"Failed to update {type} "
+                    f"interview with id: {interview_id}")
                 return False
         else:
             logger.error(
@@ -354,12 +371,14 @@ def _create_backup(document):
             json.dump(json_document, f, indent=4)
 
         print(
-            f"Saved interview data to fallback JSON backup file: {backup_path}")
+            "Saved interview data to fallback JSON backup file: "
+            f"{backup_path}")
         return True
     except Exception as e:
         print(f"Failed to create backup file: {e}")
 
-        # Try a fallback location in case the configured directory isn't accessible
+        # Try a fallback location in case the
+        # configured directory isn't accessible
         try:
             fallback_dir = "."  # Current directory
             backup_path = os.path.join(fallback_dir, filename)
