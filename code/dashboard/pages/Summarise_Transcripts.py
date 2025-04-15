@@ -26,6 +26,7 @@ class MongoJSONEncoder(json.JSONEncoder):
             return obj.isoformat()
         return super().default(obj)
 
+
 # Initialize the admin page with login
 if not setup_admin_page("Summarise Transcripts | Gatsby AI Interview"):
     st.stop()
