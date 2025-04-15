@@ -10,8 +10,10 @@ from login import setup_admin_page
 if not setup_admin_page("Transfer Transcripts | Gatsby AI Interview"):
     st.stop()
 
-st.write("Transfer documents between MongoDB collections "
-         "based on timestamp criteria.")
+st.write(
+    "Transfer documents between MongoDB collections "
+    "based on timestamp criteria."
+)
 
 st.header("Manual Transcript Transfer")
 
@@ -44,7 +46,8 @@ except Exception:
     mongo_uri = "mongodb://localhost:27017/"
     st.sidebar.warning(
         "Using default MongoDB connection. "
-        "For production, set up secrets.toml.")
+        "For production, set up secrets.toml."
+    )
 
 # MongoDB database name from config
 database_name = config.MONGODB_DB_NAME
@@ -99,8 +102,9 @@ def extract_documents(db, collection_name, query):
 # Function to insert documents
 
 
-def insert_documents(documents):
+def insert_documents(db, dest_name, documents):
     try:
+        destination = db[dest_name]
 
         if not documents:
             st.warning("No documents to insert.")
@@ -123,6 +127,7 @@ def insert_documents(documents):
                 document_copy = document
 
             # Insert into destination collection
+            destination.insert_one(document_copy)
             inserted_count += 1
 
             # Update progress
@@ -212,7 +217,8 @@ if st.button("Extract Documents for Review"):
 
             st.success(
                 f"Successfully extracted {count} documents "
-                f"from '{source_collection}'")
+                f"from '{source_collection}'"
+            )
         else:
             st.session_state.extraction_complete = False
 
@@ -361,7 +367,8 @@ if st.session_state.extraction_complete:
                 with st.spinner(
                     f"Inserting {len(selected_docs)} documents..."
                 ):
-                    inserted = insert_documents(selected_docs)
+                    inserted = insert_documents(
+                        db, destination_collection, selected_docs)
 
                 if inserted > 0:
                     st.success(
@@ -371,8 +378,8 @@ if st.session_state.extraction_complete:
                     # Reset extraction state to start fresh
                     # Instead of directly setting select_all
                     # which causes an error,
-                    # we'll use a flag to trigger a full reset
-                    # on next page load
+                    # we'll use a flag to trigger a
+                    # full reset on next page load
                     st.session_state.extraction_complete = False
                     st.session_state.extracted_docs = None
                     st.session_state.extraction_count = 0
