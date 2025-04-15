@@ -9,7 +9,10 @@ def snake_to_title(s):
 
 
 def render_dict_as_bullets(d, level=0):
-    """Recursively renders dictionary contents as markdown bullet lists. Supports nested dicts and lists."""
+    """
+    Recursively renders dictionary contents as markdown bullet lists.
+    Supports nested dicts and lists.
+    """
     markdown_str = ""
     indent = "    " * level
     for k, v in d.items():
@@ -115,7 +118,10 @@ def render_student_interviews(container):
             if interviews:
                 for interview in interviews:
                     username = interview.get("username", "Unknown")
-                    with st.expander(f"## Interview with {username}", expanded=True):
+                    with st.expander(
+                        f"## Interview with {username}",
+                        expanded=True
+                    ):
                         # Interview details section
                         with st.container():
                             st.markdown("### Interview Details")
@@ -138,7 +144,9 @@ def render_student_interviews(container):
                                 responses, dict)
                             if isAnalysed:
                                 title = render_analysis_date(
-                                    interview.get("analyzed_at"), "Student Analysis")
+                                    interview.get("analyzed_at"),
+                                    "Student Analysis"
+                                )
                                 st.markdown(title)
                                 st.markdown(render_dict_as_bullets(responses))
 
@@ -156,8 +164,12 @@ def render_student_interviews(container):
                             st.markdown("### Transcript")
                             transcript = interview.get("transcript")
                             if transcript and isinstance(transcript, str):
-                                st.text_area("", transcript,
-                                             height=200, key={interview.get("_id")})
+                                st.text_area(
+                                    "",
+                                    transcript,
+                                    height=200,
+                                    key={interview.get("_id")}
+                                )
 
                         # Actions section
                         st.write(" ")
@@ -167,24 +179,41 @@ def render_student_interviews(container):
                             st.download_button(
                                 label="Download Transcript",
                                 data=interview.get("transcript", ""),
-                                file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
+                                file_name=(
+                                    f"{interview.get('username', 'unknown')}"
+                                    "_transcript.txt"
+                                ),
                                 mime="text/plain"
                             )
                         with cols[1]:
                             col1, col2 = st.columns([1, 1])
                             if not isAnalysed:
                                 with col1:
-                                    st.button("Analyse", key=f"analyse-{interview.get('_id')}",
-                                              on_click=reanalyse_and_refresh, args=(
-                                                  interview.get('_id'), "Student"),
-                                              use_container_width=True)
+                                    st.button(
+                                        "Analyse",
+                                        key=f"analyse-{interview.get('_id')}",
+                                        on_click=reanalyse_and_refresh,
+                                        args=(
+                                            interview.get('_id'),
+                                            "Student"
+                                        ),
+                                        use_container_width=True
+                                    )
                             with col2:
-                                st.button("Delete", key=f"delete-{interview.get('_id')}",
-                                          on_click=delete_and_refresh, args=(
-                                              interview.get('_id'), "Student"),
-                                          use_container_width=True)
+                                st.button(
+                                    "Delete",
+                                    key=f"delete-{interview.get('_id')}",
+                                    on_click=delete_and_refresh,
+                                    args=(
+                                        interview.get('_id'),
+                                        "Student"
+                                    ),
+                                    use_container_width=True
+                                )
             else:
-                st.info("No student interview responses found in the database.")
+                st.info(
+                    "No student interview responses found in the database."
+                )
         except Exception as e:
             st.error(f"Error fetching student interview responses: {e}")
 
@@ -198,7 +227,10 @@ def render_staff_interviews(container):
             if interviews:
                 for interview in interviews:
                     username = interview.get("username", "Unknown")
-                    with st.expander(f"## Interview with {username}", expanded=True):
+                    with st.expander(
+                        f"## Interview with {username}",
+                        expanded=True
+                    ):
                         # Interview details section
                         with st.container():
                             st.markdown("### Interview Details")
@@ -221,7 +253,9 @@ def render_staff_interviews(container):
                                 responses, dict)
                             if responses and isinstance(responses, dict):
                                 title = render_analysis_date(
-                                    interview.get("analyzed_at"), "Staff Analysis")
+                                    interview.get("analyzed_at"),
+                                    "Staff Analysis"
+                                )
                                 st.markdown(title)
                                 st.markdown(render_dict_as_bullets(responses))
 
@@ -230,8 +264,12 @@ def render_staff_interviews(container):
                             st.markdown("### Transcript")
                             transcript = interview.get("transcript")
                             if transcript and isinstance(transcript, str):
-                                st.text_area("", transcript,
-                                             height=200, key={interview.get("_id")})
+                                st.text_area(
+                                    "",
+                                    transcript,
+                                    height=200,
+                                    key={interview.get("_id")}
+                                )
 
                         # Actions section
                         st.write(" ")
@@ -241,22 +279,36 @@ def render_staff_interviews(container):
                             st.download_button(
                                 label="Download Transcript",
                                 data=interview.get("transcript", ""),
-                                file_name=f"{interview.get('username', 'unknown')}_transcript.txt",
+                                file_name=(
+                                    f"{interview.get('username', 'unknown')}"
+                                    "_transcript.txt"
+                                ),
                                 mime="text/plain"
                             )
                         with cols[1]:
                             col1, col2 = st.columns([1, 1])
                             if not isAnalysed:
                                 with col1:
-                                    st.button("Analyse", key=f"analyse-{interview.get('_id')}",
-                                              on_click=reanalyse_and_refresh, args=(
-                                                  interview.get('_id'), "Staff"),
-                                              use_container_width=True)
+                                    st.button(
+                                        "Analyse",
+                                        key=f"analyse-{interview.get('_id')}",
+                                        on_click=reanalyse_and_refresh,
+                                        args=(
+                                            interview.get('_id'),
+                                            "Staff"
+                                        ),
+                                        use_container_width=True)
                             with col2:
-                                st.button("Delete", key=f"delete-{interview.get('_id')}",
-                                          on_click=delete_and_refresh, args=(
-                                              interview.get('_id'), "Staff"),
-                                          use_container_width=True)
+                                st.button(
+                                    "Delete",
+                                    key=f"delete-{interview.get('_id')}",
+                                    on_click=delete_and_refresh,
+                                    args=(
+                                        interview.get('_id'),
+                                        "Staff"
+                                    ),
+                                    use_container_width=True
+                                )
             else:
                 st.info("No staff interview responses found in the database.")
         except Exception as e:
