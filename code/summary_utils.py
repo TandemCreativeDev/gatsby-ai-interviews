@@ -191,7 +191,7 @@ def generate_staff_transcript_summary(transcript):
         print(f"OpenAI client initialized successfully")
         
         # Create the prompt with instructions to summarize according to the staff schema
-        system_prompt = """You are an expert at analysing staff interview transcripts about AI in education, extracting key information according to a schema and anonymising sensitive personal data or confidential content.
+        system_prompt = """You are an expert at analysing staff interview transcripts about AI in further education, extracting key information according to a schema and anonymising sensitive personal data or confidential content.
         Return ONLY valid JSON without additional text. Follow the exact schema provided.
         IMPORTANT: If you cannot find information for a specific field in the transcript, leave that field empty (empty string, empty array, or null as appropriate). DO NOT use the example values from the schema as defaults."""
         
