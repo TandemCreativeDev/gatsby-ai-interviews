@@ -97,16 +97,23 @@ def generate_meta_summary(interviews):
         if is_staff_collection:
             system_prompt = """
             You are an expert at analysing staff interview
-             data about AI in education and creating incisive, insightful
+             data about AI in further education and creating incisive, insightful
              summaries.
             Your task is to create a 800-word plain text summary that captures
-             the key patterns and insights across all staff respondents.
+             perspectives of staff who are directly involved in teaching as well
+             as those working in support functions like HR and estates. The summary
+             should provide an overview of how AI is being used or could be used
+             both in teaching and learning but also the running of the college.
             Focus on the most prevalent themes regarding AI integration in
-             education, notable patterns in the teaching approaches, and
+             the college, notable patterns in the teaching approaches, and
              significant institutional considerations.
-            Include breakdowns of participant responses where demographic
-             information is available, such as age, gender, and subjects
-             taught. Your summary should be in British English.
+            Start each summary with a table providing information about the
+             respondents such as subjects taught or department.
+            Try to provide the information in three sections as follows:
+                a. The current use of AI across the college
+                b. Where AI might add the most value in the future
+                c. Issues around supporting better use of AI in the college.
+            Your summary should be in British English.
             """
 
             # Convert interview data to JSON format
