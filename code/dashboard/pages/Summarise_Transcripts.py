@@ -72,119 +72,183 @@ def generate_meta_summary(interviews):
         for interview in interviews:
             interview_copy = copy.deepcopy(interview)
 
-            # For staff interviews (based on selected collection name)
-            if "staff" in selected_collection.lower():
-                # Check if staff interview has responses
-                if "responses" in interview_copy:
-                    # Remove the transcript to save tokens,
-                    # but keep all other metadata
-                    if "transcript" in interview_copy:
-                        del interview_copy["transcript"]
-                    cleaned_interviews.append(interview_copy)
-                else:
-                    # Skip staff interviews without responses
-                    continue
-            else:
-                # For student interviews, remove the transcript to save tokens
-                if "transcript" in interview_copy:
-                    del interview_copy["transcript"]
-                cleaned_interviews.append(interview_copy)
+            if "transcript" in interview_copy:
+                del interview_copy["transcript"]
+
+            cleaned_interviews.append(interview_copy)
+        print(f"Number of interviews being summarised: {len(interview_copy)}")
+        interviews_json = json.dumps(
+            cleaned_interviews, cls=MongoJSONEncoder
+        )
 
         # Determine if we're summarizing staff or student interviews
         is_staff_collection = "staff" in selected_collection.lower()
 
         # Create the prompt for meta-summary based on collection type
+
+        system_prompt = """
+        You are an experienced educational researcher specialising in
+        technology adoption in further education institutions. You have
+        extensive experience analysing qualitative data from interviews
+        and creating research summaries for policy reports and academic
+        publications.
+        Your expertise lies in identifying emerging patterns across diverse
+        stakeholder perspectives and distilling complex findings into
+        clear, actionable insights. You excel at balancing nuance with
+        clarity and avoiding oversimplification while maintaining
+        readability.
+        Your summary should be in British English.
+        """
+
         if is_staff_collection:
-            system_prompt = """
-            You are an expert at analysing staff interview
-             data about AI in further education and creating incisive, insightful
-             summaries.
+            user_prompt = f"""
+            # FE Staff Summary
+            ## Task
+            Analyse the following collection of staff interview analyses about
+            AI in education and create an incisive 800-word plain text summary
+            that captures the key patterns and insights across all staff
+            respondents.
+
+            ## Details on Breakdown
             Your task is to create a 800-word plain text summary that captures
-             perspectives of staff who are directly involved in teaching as well
-             as those working in support functions like HR and estates. The summary
-             should provide an overview of how AI is being used or could be used
-             both in teaching and learning but also the running of the college.
-            Focus on the most prevalent themes regarding AI integration in
-             the college, notable patterns in the teaching approaches, and
-             significant institutional considerations.
-            Start each summary with a table providing information about the
-             respondents such as subjects taught or department.
+            perspectives of staff who are directly involved in teaching as
+            well as those working in support functions like HR and estates.
+            The summary should provide an overview of how AI is being used or
+            could be used both in teaching and learning but also the running
+            of the college.
+            Focus on the most prevalent themes regarding AI integration in the
+            college, notable patterns in the teaching approaches, and
+            significant institutional considerations.
             Try to provide the information in three sections as follows:
                 a. The current use of AI across the college
+                    - Include examples/information on how AI is used in lesson
+                    planning, delivery, or assessment.
                 b. Where AI might add the most value in the future
-                c. Issues around supporting better use of AI in the college.
-            Your summary should be in British English.
-            """
+                c. Issues around supporting better use of AI in the college
+                    - Include examples/information on barriers respondents
+                    foresee in integrating AI (e.g., staff training, ethical
+                    concerns).
 
-            # Convert interview data to JSON format
-            # for the prompt using custom encoder
-            interviews_json = json.dumps(
-                cleaned_interviews, cls=MongoJSONEncoder)
-
-            user_prompt = f"""
-            Analyse the following collection of staff interview analyses about
-             AI in education and create an incisive 800-word plain text summary
-            that captures the key patterns and insights across all staff
-             respondents.
-
+            ## Analysis JSON Summaries
             Here are the staff interview analyses to summarise:
-
+            ```json
             {interviews_json}
+            ```
 
-            IMPORTANT INSTRUCTIONS:
+            ## Criteria
             1. Create a plain text summary of approximately 800 words.
-            2. Focus on key patterns, trends, and insights that emerge across
-             multiple staff respondents.
-            3. Include demographic breakdowns where available (age, gender,
-             subjects taught).
-            4. Highlight patterns related to educational settings, AI
-             integration strategies, and implementation considerations.
-            5. Emphasize notable agreements or differences in perspectives on
-             adopting AI in educational contexts.
-            6. Use British English spelling (e.g., "summarise" not
-             "summarize").
-            7. Do not structure the response as JSON or with headers - just
-             plain text.
+            2. Begin with a comprehensive demographic data table formatted in
+            markdown (but not in a code block), showing:
+                - College breakdown with counts and percentages
+                - Staff role breakdown with counts and percentages
+                - Subjects taught (list with count)
+                - Departments with counts and percentages
+            3. Focus on key patterns, trends, and insights that emerge across
+            multiple staff respondents.
+            4. Include quantitative insights about common themes (provide
+            approximate percentages in ranges: under 15%, 15-30%, 30-70%,
+            71-85%, over 85%) for topics such as:
+                - Using AI for teaching
+                - Using AI for work
+                - Using AI outside education
+                - Attitudes towards AI in education
+                - Concerns about AI
+                - Other prominent themes that emerge
+            5. Highlight patterns related to educational settings, AI
+            integration strategies, and implementation considerations.
+            6. Emphasise notable agreements or differences in perspectives on
+            adopting AI in educational contexts.
+            7. Use British English spelling (e.g., "summarise" not
+            "summarize").
+            8. Do not structure the response as JSON or with headers - just
+            plain text.
+            9. IMPORTANT: Anonymise all references to specific teachers,
+            principals, or colleges in examples.
+            10. Avoid duplicating the same examples or points in different
+            sections.
+            11. Analyse how participants interacted with the AI during their
+            sessions (e.g., whether they challenged findings, asked for
+            examples, refined questions, or requested concrete outputs).
+            12. Ensure the summary can be filtered to produce separate
+            summaries for different staff roles (principals, teachers, and
+            support staff).
+            13. Do not structure the response as JSON or with headers - just
+            plain text after the initial table.
+            14. Use markdown to format your response, if using paragraph
+            headings make them level 4 headings.
+            15. IMPORTANT: Do not fabricate any information, all findings must
+            be explicitly in the interviews data, particularly demographic
+            information. Circle back and double check your numbers against the
+            interviews, recalculate if in doubt.
             """
         else:
-            system_prompt = """You are an expert at analysing student
-             interview data and creating incisive, insightful summaries.
-            Your task is to create a 800-word plain text summary that captures
-             the key patterns and insights across all student respondents.
-            Focus on the most prevalent themes, notable patterns, and
-             significant insights.
-            Include detailed breakdowns of participant responses based on
-             demographics like age, gender, and college where that information
-             is available. Your summary should be in British English.
-            """
-
-            # Convert interview data to JSON format
-            # for the prompt using custom encoder
-            interviews_json = json.dumps(
-                cleaned_interviews, cls=MongoJSONEncoder)
-
             user_prompt = f"""
+            # FE Student Summary
+
+            ## Task
             Analyse the following collection of student interview documents
-             and create an incisive 800-word plain text summary that captures
-             the key patterns and insights across all respondents.
+            and create an incisive 800-word plain text summary that captures
+            the key patterns and insights across all respondents.
 
+            ## Detail of Breakdown
+            Your task is to create a 800-word plain text summary that captures
+            the key patterns and insights across all student respondents.
+            Focus on the most prevalent themes, notable patterns, and
+            significant insights.
+
+            ## Analysis JSON Summaries
             Here are the interview documents to analyse:
-
+            ```json
             {interviews_json}
+            ```
 
-            IMPORTANT INSTRUCTIONS:
+            ## Criteria
             1. Create a plain text summary of approximately 800 words.
-            2. Focus on key patterns, trends, and insights that emerge across
-             multiple student respondents.
-            3. Include detailed demographic breakdowns of responses based on
-             age, college, and gender where available.
-            4. Present insights on how different demographic groups may have
-             different perspectives or experiences.
-            5. Highlight any notable consensus or divergence in opinions.
-            6. Use British English spelling (e.g., "summarise" not
-             "summarize").
-            7. Do not structure the response as JSON or with headers - just
-             plain text.
+            2. Begin with a comprehensive demographic data table formatted in
+            markdown (but not in a code block), showing:
+                - Gender breakdown (male, female, unknown) with counts and
+                percentages
+                - College breakdown with counts and percentages
+                - Age groups (under 25, over 25, unknown) with counts and
+                percentages
+                - Subjects mentioned (list with counts)
+                - Course types (A-levels, BTECs, Apprenticeships, T-levels)
+                with counts and percentages
+            3. Focus on key patterns, trends, and insights that emerge across
+            multiple student respondents.
+            4. Include quantitative insights about common themes (provide
+            approximate percentages in ranges: under 15%, 15-30%, 30-70%,
+            71-85%, over 85%) for topics such as:
+                - Using AI for learning
+                - Using AI for assignments
+                - Using AI outside learning
+                - Attitudes towards AI in education
+                - Concerns about AI
+                - Other prominent themes that emerge
+            5. Present insights on how different demographic groups may have
+            different perspectives or experiences.
+            6. Highlight any notable consensus or divergence in opinions.
+            7. Anonymise all references to specific students, teachers, or
+            colleges in examples.
+            8. Use British English spelling (e.g., "summarise" not
+            "summarize").
+            9. Try to provide the information in three sections as follows:
+                a. Current use of AI by students
+                    - Include examples of how AI is used for coursework,
+                    research, or personal development
+                b. Where students believe AI might add the most value in their
+                education
+                c. Issues and challenges students identify around AI in
+                education
+                    - Include examples of concerns or barriers students mention
+            10. Do not structure the response as JSON or with headers - just
+            plain text after the initial demographic table.
+            11. Use markdown to format your response, if using paragraph
+            headings make them level 4 headings.
+            12. IMPORTANT: Do not fabricate any information, all findings must
+            be explicitly in the interviews data, particularly demographic
+            information. Circle back and double check your numbers against the
+            interviews, recalculate if in doubt.
             """
 
         # Call OpenAI to generate the meta-summary
