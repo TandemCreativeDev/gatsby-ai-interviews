@@ -1,4 +1,4 @@
-from transcript_utils import initialize_session_state, render_staff_interviews
+from transcript_utils import initialise_session_state, render_interviews
 from login import setup_admin_page
 import os
 import sys
@@ -18,10 +18,10 @@ st.write("View completed staff interview transcripts and processed data.")
 st.header("Staff Transcripts")
 
 # Initialize session state for refresh counter
-initialize_session_state()
+initialise_session_state()
 
 # Create container for interviews
 interview_container = st.container()
 
 # Render the interviews
-render_staff_interviews(interview_container)
+render_interviews(interview_container, "Staff")
