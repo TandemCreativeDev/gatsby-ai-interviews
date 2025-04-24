@@ -1,6 +1,6 @@
 from transcript_utils import (
-    initialize_session_state,
-    render_student_interviews
+    initialise_session_state,
+    render_interviews
 )
 from login import setup_admin_page
 import streamlit as st
@@ -20,10 +20,10 @@ st.write("View completed student interview transcripts and processed data.")
 st.header("Student Transcripts")
 
 # Initialize session state for refresh counter
-initialize_session_state()
+initialise_session_state()
 
 # Create container for interviews
 interview_container = st.container()
 
 # Render the interviews
-render_student_interviews(interview_container)
+render_interviews(interview_container, "Student")
