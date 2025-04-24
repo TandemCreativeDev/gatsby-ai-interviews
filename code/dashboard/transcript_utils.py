@@ -36,8 +36,8 @@ def render_dict_as_bullets(d, level=0):
     return markdown_str
 
 
-def initialize_session_state():
-    """Initialize session state variables needed for transcript views."""
+def initialise_session_state():
+    """Initialise session state variables needed for transcript views."""
     if "refresh_counter" not in st.session_state:
         st.session_state.refresh_counter = 0
 
@@ -109,12 +109,17 @@ def render_analysis_date(analyzed_at, title="Analysis"):
     return f"### {title}"
 
 
-def render_student_interviews(container):
-    """Render student interviews with their analyses."""
+def render_interviews(container, interview_type):
+    """Render interviews with their analyses.
+
+    Args:
+        container: Streamlit container to render within
+        interview_type: Type of interview ("Student" or "Staff")
+    """
     with container:
         try:
-            with st.spinner("Loading interviews..."):
-                interviews = get_interviews(type="Student")
+            with st.spinner(f"Loading {interview_type.lower()} interviews..."):
+                interviews = get_interviews(type=interview_type)
             if interviews:
                 for interview in interviews:
                     username = interview.get("username", "Unknown")
@@ -145,19 +150,20 @@ def render_student_interviews(container):
                             if isAnalysed:
                                 title = render_analysis_date(
                                     interview.get("analyzed_at"),
-                                    "Student Analysis"
+                                    f"{interview_type} Analysis"
                                 )
                                 st.markdown(title)
                                 st.markdown(render_dict_as_bullets(responses))
 
-                        # Sentiment analysis section
                         with st.container():
-                            sentiments = interview.get("sentiment_analysis")
+                            sentiments = interview.get(
+                                "sentiment_analysis")
                             if sentiments and isinstance(sentiments, dict):
                                 title = render_analysis_date(interview.get(
                                     "analyzed_at"), "Sentiment Analysis")
                                 st.markdown(title)
-                                st.markdown(render_dict_as_bullets(sentiments))
+                                st.markdown(
+                                    render_dict_as_bullets(sentiments))
 
                         # Transcript section
                         with st.container():
@@ -187,15 +193,16 @@ def render_student_interviews(container):
                             )
                         with cols[1]:
                             col1, col2 = st.columns([1, 1])
-                            if not isAnalysed:
+                            if not isAnalysed or interview_type == "Staff":
                                 with col1:
                                     st.button(
-                                        "Analyse",
+                                        ("Re-analyse" if isAnalysed
+                                         else "Analyse"),
                                         key=f"analyse-{interview.get('_id')}",
                                         on_click=reanalyse_and_refresh,
                                         args=(
                                             interview.get('_id'),
-                                            "Student"
+                                            interview_type
                                         ),
                                         use_container_width=True
                                     )
@@ -206,110 +213,16 @@ def render_student_interviews(container):
                                     on_click=delete_and_refresh,
                                     args=(
                                         interview.get('_id'),
-                                        "Student"
+                                        interview_type
                                     ),
                                     use_container_width=True
                                 )
             else:
                 st.info(
-                    "No student interview responses found in the database."
+                    f"No {interview_type.lower()} interview responses "
+                    "found in the database."
                 )
         except Exception as e:
-            st.error(f"Error fetching student interview responses: {e}")
-
-
-def render_staff_interviews(container):
-    """Render staff interviews with their analyses."""
-    with container:
-        try:
-            with st.spinner("Loading interviews..."):
-                interviews = get_interviews(type="Staff")
-            if interviews:
-                for interview in interviews:
-                    username = interview.get("username", "Unknown")
-                    with st.expander(
-                        f"## Interview with {username}",
-                        expanded=True
-                    ):
-                        # Interview details section
-                        with st.container():
-                            st.markdown("### Interview Details")
-                            safe_render_field(
-                                interview, "college", "College", "text")
-                            safe_render_field(
-                                interview, "age_group", "Age Group", "text")
-                            safe_render_field(
-                                interview, "gender", "Gender", "text")
-                            render_time_data(interview.get("time_data"))
-                            completed = interview.get("completed")
-                            if completed is not None:
-                                tick = "✓" if completed else "✗"
-                                st.write(f"Completed: {tick}")
-
-                        # Responses section
-                        with st.container():
-                            responses = interview.get("responses")
-                            isAnalysed = responses and isinstance(
-                                responses, dict)
-                            if responses and isinstance(responses, dict):
-                                title = render_analysis_date(
-                                    interview.get("analyzed_at"),
-                                    "Staff Analysis"
-                                )
-                                st.markdown(title)
-                                st.markdown(render_dict_as_bullets(responses))
-
-                        # Transcript section
-                        with st.container():
-                            st.markdown("### Transcript")
-                            transcript = interview.get("transcript")
-                            if transcript and isinstance(transcript, str):
-                                st.text_area(
-                                    "",
-                                    transcript,
-                                    height=200,
-                                    key={interview.get("_id")}
-                                )
-
-                        # Actions section
-                        st.write(" ")
-                        st.write(" ")
-                        cols = st.columns([1, 1])
-                        with cols[0]:
-                            st.download_button(
-                                label="Download Transcript",
-                                data=interview.get("transcript", ""),
-                                file_name=(
-                                    f"{interview.get('username', 'unknown')}"
-                                    "_transcript.txt"
-                                ),
-                                mime="text/plain"
-                            )
-                        with cols[1]:
-                            col1, col2 = st.columns([1, 1])
-                            if not isAnalysed:
-                                with col1:
-                                    st.button(
-                                        "Analyse",
-                                        key=f"analyse-{interview.get('_id')}",
-                                        on_click=reanalyse_and_refresh,
-                                        args=(
-                                            interview.get('_id'),
-                                            "Staff"
-                                        ),
-                                        use_container_width=True)
-                            with col2:
-                                st.button(
-                                    "Delete",
-                                    key=f"delete-{interview.get('_id')}",
-                                    on_click=delete_and_refresh,
-                                    args=(
-                                        interview.get('_id'),
-                                        "Staff"
-                                    ),
-                                    use_container_width=True
-                                )
-            else:
-                st.info("No staff interview responses found in the database.")
-        except Exception as e:
-            st.error(f"Error fetching staff interview responses: {e}")
+            st.error(
+                f"Error fetching {interview_type.lower()} "
+                f"interview responses: {e}")
