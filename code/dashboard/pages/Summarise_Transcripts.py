@@ -300,6 +300,13 @@ selected_collection = st.selectbox(
     index=0 if collection_options else None
 )
 
+# Add staff role filter if staff collection is selected
+selected_role = None
+if selected_collection and "staff" in selected_collection.lower():
+    from database import get_staff_roles
+    staff_roles = get_staff_roles()
+    selected_role = st.selectbox("Filter by role:", staff_roles)
+
 # Process button to retrieve the interviews
 if st.button("Retrieve Interviews"):
     if selected_collection:
@@ -310,16 +317,27 @@ if st.button("Retrieve Interviews"):
                 # Access the collection directly
                 collection = db[selected_collection]
 
-                # Query all documents
-                documents = list(collection.find({}))
+                # Create filter query
+                filter_query = {}
+                
+                # Apply role filter for staff collections
+                if "staff" in selected_collection.lower() and selected_role and selected_role != "All":
+                    filter_query["role"] = selected_role
+                
+                # Query documents with filter
+                documents = list(collection.find(filter_query))
 
                 if documents:
                     # Store the full documents in session state
                     st.session_state['interviews'] = documents
 
-                    # Display count of retrieved documents
+                    # Display count of retrieved documents with role info if applicable
+                    role_info = ""
+                    if "staff" in selected_collection.lower() and selected_role and selected_role != "All":
+                        role_info = f" with role '{selected_role}'"
+                    
                     st.success(
-                        f"Successfully retrieved {len(documents)} interviews "
+                        f"Successfully retrieved {len(documents)} interviews{role_info} "
                         f"from the '{selected_collection}' collection.")
                 else:
                     st.warning(
@@ -341,8 +359,17 @@ if 'interviews' in st.session_state and st.button("Generate Summary"):
 
         # Determine collection type for display
         if "staff" in selected_collection.lower():
-            st.subheader("Summary of Staff Interviews")
+            # Include role in the header if filtered
+            role_info = ""
+            if selected_role and selected_role != "All":
+                role_info = f" ({selected_role})"
+            
+            st.subheader(f"Summary of Staff Interviews{role_info}")
             file_prefix = "staff"
+            
+            # Include role in the filename if filtered
+            if selected_role and selected_role != "All":
+                file_prefix = f"staff_{selected_role.lower()}"
         else:
             st.subheader("Summary of Student Interviews")
             file_prefix = "student"
