@@ -219,14 +219,18 @@ def upload_local_backups(type="Student"):
             logger.error(f"Error processing backup file {backup_path}: {e}")
 
 
-def get_interviews(username=None, limit=100, type="Student"):
+def get_interviews(username=None, limit=100, type="Student", role=None):
     """
     Retrieve interview data from MongoDB
 
     Args:
         username (str, optional): Filter by username. Defaults to None.
         limit (int, optional): Maximum number of records to return. 
-        Defaults to 100.
+            Defaults to 100.
+        type (str, optional): Type of interview ("Student" or "Staff").
+            Defaults to "Student".
+        role (str, optional): Filter staff interviews by role.
+            Defaults to None.
 
     Returns:
         list: List of interview documents
@@ -239,6 +243,10 @@ def get_interviews(username=None, limit=100, type="Student"):
             if username:
                 filter_query["username"] = {
                     "$regex": f"^{username}", "$options": "i"}
+                    
+            # Add role filter for Staff interviews
+            if role and type == "Staff" and role != "All":
+                filter_query["role"] = role
 
             # Query database
             cursor = collection.find(filter_query).sort(
@@ -257,6 +265,33 @@ def get_interviews(username=None, limit=100, type="Student"):
         logger.error(error_msg)
         st.error(error_msg)
         return []
+
+
+def get_staff_roles():
+    """
+    Retrieve unique staff roles from the database
+
+    Returns:
+        list: List of unique staff roles
+    """
+    try:
+        collection = get_collection("Staff")
+        if collection is not None:
+            # Find unique roles in the staff collection
+            roles = collection.distinct("role")
+            
+            # Add "All" option and sort
+            all_roles = ["All"] + sorted(roles)
+            
+            logger.info(f"Retrieved {len(roles)} unique staff roles")
+            return all_roles
+        else:
+            logger.error("Failed to get Staff collection")
+            return ["All"]
+    except Exception as e:
+        error_msg = f"Failed to retrieve staff roles: {e}"
+        logger.error(error_msg)
+        return ["All"]
 
 
 def delete_interview(interview_id, type):

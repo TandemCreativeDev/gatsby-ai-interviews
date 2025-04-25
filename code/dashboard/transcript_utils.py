@@ -109,17 +109,18 @@ def render_analysis_date(analyzed_at, title="Analysis"):
     return f"### {title}"
 
 
-def render_interviews(container, interview_type):
+def render_interviews(container, interview_type, role=None):
     """Render interviews with their analyses.
 
     Args:
         container: Streamlit container to render within
         interview_type: Type of interview ("Student" or "Staff")
+        role: Optional role filter for Staff interviews
     """
     with container:
         try:
             with st.spinner(f"Loading {interview_type.lower()} interviews..."):
-                interviews = get_interviews(type=interview_type)
+                interviews = get_interviews(type=interview_type, role=role)
             if interviews:
                 for interview in interviews:
                     username = interview.get("username", "Unknown")
@@ -136,6 +137,10 @@ def render_interviews(container, interview_type):
                                 interview, "age_group", "Age Group", "text")
                             safe_render_field(
                                 interview, "gender", "Gender", "text")
+                            # Display role for Staff interviews
+                            if interview_type == "Staff":
+                                safe_render_field(
+                                    interview, "role", "Role", "text")
                             render_time_data(interview.get("time_data"))
                             completed = interview.get("completed")
                             if completed is not None:
