@@ -49,10 +49,7 @@ except Exception:
 database_name = config.MONGODB_DB_NAME
 
 
-
 # Function to connect to MongoDB
-
-
 def connect_to_mongodb(uri, db_name):
     try:
         client = MongoClient(uri)
@@ -64,9 +61,8 @@ def connect_to_mongodb(uri, db_name):
         st.error(f"Failed to connect to MongoDB: {e}")
         return None, None
 
+
 # Function to extract documents
-
-
 def extract_documents(db, collection_name, query):
     try:
         collection = db[collection_name]
@@ -82,9 +78,8 @@ def extract_documents(db, collection_name, query):
         st.error(f"Error extracting documents: {e}")
         return None, 0
 
+
 # Function to insert documents
-
-
 def insert_documents(db, dest_name, documents):
     try:
         destination = db[dest_name]
