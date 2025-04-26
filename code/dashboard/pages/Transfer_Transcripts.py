@@ -44,32 +44,12 @@ try:
 except Exception:
     # Fallback for local development or if secrets are not configured
     mongo_uri = "mongodb://localhost:27017/"
-    st.sidebar.warning(
-        "Using default MongoDB connection. "
-        "For production, set up secrets.toml."
-    )
 
 # MongoDB database name from config
 database_name = config.MONGODB_DB_NAME
 
-# MongoDB connection settings
-with st.sidebar:
-    st.header("Database Connection")
-    # Display the connection string but don't allow editing if from secrets
-    if "mongo" in st.secrets:
-        st.text_input("MongoDB URI (from secrets)",
-                      value="[Connected using secrets.toml]", disabled=True)
-    else:
-        mongo_uri = st.text_input(
-            "MongoDB URI", value=mongo_uri, type="password")
-
-    st.text_input("Database Name (from config)",
-                  value=database_name, disabled=True)
-    st.info("Make sure your MongoDB instance is running and accessible.")
 
 # Function to connect to MongoDB
-
-
 def connect_to_mongodb(uri, db_name):
     try:
         client = MongoClient(uri)
@@ -81,9 +61,8 @@ def connect_to_mongodb(uri, db_name):
         st.error(f"Failed to connect to MongoDB: {e}")
         return None, None
 
+
 # Function to extract documents
-
-
 def extract_documents(db, collection_name, query):
     try:
         collection = db[collection_name]
@@ -99,9 +78,8 @@ def extract_documents(db, collection_name, query):
         st.error(f"Error extracting documents: {e}")
         return None, 0
 
+
 # Function to insert documents
-
-
 def insert_documents(db, dest_name, documents):
     try:
         destination = db[dest_name]
