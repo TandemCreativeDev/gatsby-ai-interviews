@@ -40,14 +40,17 @@ class DataNormaliser:
             ]
         }
 
-        # Domain-specific substitutions (based on your example)
+        # Domain-specific substitutions
         self.synonym_mappings = {
             'subject': {
                 'graphic design': ['graphics', 'graphics and photography', 'graphic design visual communications'],
                 'information technology': ['it', 'btec it'],
-                'biology chemistry mathematics': ['biology chemistry maths', 'chemistry biology maths'],
                 'animal management': ['animal care', 'animal welfare', 'animal care and welfare'],
-                'construction': ['multi-trade construction', 'multi trade']
+                'construction': ['multi-trade construction', 'multi trade'],
+                'mathematics': ['maths', 'further maths', 'further mathematics'],
+                'biology': ['bio'],
+                'chemistry': ['chem'],
+                'psychology': ['psych']
             }
         }
 
@@ -115,6 +118,59 @@ class DataNormaliser:
 
         return result
 
+    def split_combined_subjects(self, value_list, category=None):
+        """
+        Split combined subjects into individual subjects
+
+        Args:
+            value_list (list): List of subject values to split
+            category (str): Category type
+
+        Returns:
+            list: Expanded list with individual subjects
+        """
+        if category != 'subject':
+            return value_list
+
+        result = []
+
+        # Common subject names to identify in combinations
+        subjects = [
+            'mathematics', 'maths', 'further maths', 'further mathematics',
+            'biology', 'chemistry', 'physics', 'psychology', 'sociology',
+            'english', 'history', 'geography', 'computer science',
+            'business', 'economics', 'art', 'design', 'music'
+        ]
+
+        for value in value_list:
+            if not value or value == "Unknown":
+                result.append(value)
+                continue
+
+            # Check if this is a combined subject string
+            value_lower = value.lower()
+
+            # If contains 'and' or multiple subjects from our list, split it
+            contains_multiple = ('and' in value_lower) or sum(1 for subj in subjects if subj in value_lower) > 1
+
+            if contains_multiple:
+                # Split by common separators
+                words = re.split(r'\s+and\s+|\s+&\s+|,\s*', value_lower)
+
+                # Also check for subject names directly in the value
+                for subject in subjects:
+                    if subject in value_lower and not any(subject in word for word in words):
+                        words.append(subject)
+
+                # Add each identified subject to results
+                for word in words:
+                    if word and word.strip():
+                        result.append(word.strip())
+            else:
+                result.append(value)
+
+        return result
+
     def cluster_similar_values(self, value_list, category=None, threshold=0.85):
         """
         Group similar values together using fuzzy matching
@@ -134,6 +190,10 @@ class DataNormaliser:
 
         # First pass: clean and standardize all values
         cleaned_values = [self.clean_text(val, category) for val in value_list]
+
+        # Split combined subjects if needed
+        if category == 'subject':
+            cleaned_values = self.split_combined_subjects(cleaned_values, category)
 
         # Apply known synonym mappings if available
         cleaned_values = self.apply_direct_mappings(cleaned_values, category)
@@ -241,16 +301,191 @@ class DataNormaliser:
 
         return normalised_values, mapping, cluster_info
 
-    def generate_stats_with_normalised_values(self, documents):
+    def extract_subjects_from_transcripts(self, documents):
         """
-        Generate statistics with normalised categorical values
+        Extract individual subjects from study fields and transcripts
 
         Args:
             documents (list): List of interview documents
 
         Returns:
+            dict: Dictionary with subject counts
+        """
+        subject_mentions = defaultdict(int)
+
+        # Common subject names to look for
+        subject_patterns = {
+            'Mathematics': [r'\bmaths\b', r'\bmathematics\b', r'\bfurther maths\b'],
+            'Biology': [r'\bbiology\b', r'\bbio\b'],
+            'Chemistry': [r'\bchemistry\b', r'\bchem\b'],
+            'Physics': [r'\bphysics\b'],
+            'Psychology': [r'\bpsychology\b', r'\bpsych\b'],
+            'English': [r'\benglish\b'],
+            'Computer Science': [r'\bcomputer science\b', r'\bcomputing\b', r'\bIT\b', r'\binformation technology\b'],
+            'Business': [r'\bbusiness\b', r'\beconomics\b'],
+            'Art & Design': [r'\bart\b', r'\bdesign\b', r'\bgraphics\b', r'\bgraphic design\b'],
+            'History': [r'\bhistory\b'],
+            'Geography': [r'\bgeography\b'],
+            'Sociology': [r'\bsociology\b'],
+            'Health & Social Care': [r'\bhealth\b', r'\bsocial care\b', r'\bhealthcare\b'],
+            'Engineering': [r'\bengineering\b'],
+            'Media': [r'\bmedia\b', r'\bjournalism\b'],
+            'Sport': [r'\bsport\b', r'\bpe\b', r'\bphysical education\b'],
+            'Animal Management': [r'\banimal\b']
+        }
+
+        for doc in documents:
+            # Get study field from responses if available
+            study_field = None
+            if ("responses" in doc and
+                "about_user" in doc["responses"] and
+                    "study_field" in doc["responses"]["about_user"]):
+                study_field = doc["responses"]["about_user"]["study_field"]
+
+            # Get transcript text
+            transcript = doc.get("transcript", "")
+
+            # Combine for analysis
+            text_to_analyze = ""
+            if study_field:
+                text_to_analyze += study_field + " "
+            if transcript:
+                text_to_analyze += transcript
+
+            text_to_analyze = text_to_analyze.lower()
+
+            # Count subject mentions
+            for subject, patterns in subject_patterns.items():
+                for pattern in patterns:
+                    if re.search(pattern, text_to_analyze):
+                        subject_mentions[subject] += 1
+                        break  # Only count each subject once per document
+
+        return dict(subject_mentions)
+
+    def normalise_college_names(self, documents):
+        """
+        Normalises college names with enhanced pattern matching for UK educational institutions
+
+        Args:
+            documents (list): List of interview documents
+
+        Returns:
+            dict: Statistics with normalised college names
+        """
+        # Extract all college names
+        college_values = [doc.get("college", "Unknown") for doc in documents]
+
+        # Specialized cleaning patterns for educational institutions
+        college_specific_patterns = [
+            # Remove campus/site indicators
+            (r'\b(campus|buddy|site|centre|center)\b', ''),
+            # Remove location qualifiers when redundant
+            (r'(\w+)(\s+\w+)\s+\1', r'\1\2'),
+            # Standardize college/university terminology
+            (r'\bcollege of\b', 'college'),
+            (r'\buniversity of\b', 'university'),
+            # Fix common typos
+            (r'\bcrencester\b', 'cirencester'),
+            # Fix known abbreviations and normalise case
+            (r'\bbmet\b', 'Birmingham Metropolitan'),
+            (r'\bTes\b', 'TES'),
+        ]
+
+        # Enhanced cleaning for college names
+        cleaned_colleges = []
+        for college in college_values:
+            if not college or not isinstance(college, str):
+                cleaned_colleges.append("Unknown")
+                continue
+
+            # Check for redacted content
+            if re.search(r'\[redacted', college, re.IGNORECASE):
+                # Only keep known college names in redacted text
+                if "fareham" in college.lower():
+                    college = "Fareham College"
+                elif "newcastle" in college.lower():
+                    college = "Newcastle College"
+                elif "moulton" in college.lower():
+                    college = "Moulton College"
+                elif "bishop burton" in college.lower():
+                    college = "Bishop Burton College"
+                elif "bmet" in college.lower():
+                    college = "BMET College"
+                else:
+                    # If no known college name found in redacted text, mark as Unknown
+                    cleaned_colleges.append("Unknown")
+                    continue
+
+            # Apply college-specific cleaning patterns
+            college = college.strip()
+            for pattern, replacement in college_specific_patterns:
+                college = re.sub(pattern, replacement, college, flags=re.IGNORECASE)
+
+            # Remove common suffixes that don't add disambiguation value
+            college = re.sub(r'\s+(college|university|institute|school)$', '', college, flags=re.IGNORECASE)
+
+            # Standardize whitespace
+            college = re.sub(r'\s+', ' ', college).strip()
+
+            # For specific problematic cases
+            if re.search(r'^fareham\b', college, re.IGNORECASE):
+                college = "Fareham College"
+            elif re.search(r'^farmham\b', college, re.IGNORECASE):  # Handle typo in Fareham
+                college = "Fareham College"
+            elif re.search(r'\bmoulton\b', college, re.IGNORECASE):
+                college = "Moulton College"
+            elif re.search(r'\bbishop\s*burton\b|\bbishopburton\b', college, re.IGNORECASE):
+                college = "Bishop Burton College"
+            elif re.search(r'\bnewcastle\b', college, re.IGNORECASE):
+                college = "Newcastle College"
+            elif re.search(r'\balex\b', college, re.IGNORECASE):
+                # Assuming Alex Stanbury is a person, not a college
+                college = "Unknown"
+            elif re.search(r'\bcapital city\b', college, re.IGNORECASE):
+                college = "Capital City College"
+            elif re.search(r'\bcircencester\b|\bcirencester\b', college, re.IGNORECASE):
+                college = "Cirencester College"
+
+            # Proper case (title case) while preserving known abbreviations
+            if college.lower() not in ["unknown", "tes"]:
+                if college.lower() == "bmet":
+                    college = "BMET College"
+                else:
+                    college = ' '.join(word.capitalize() for word in college.lower().split())
+
+            # Add College suffix if missing and name is short
+            if (len(college.split()) == 1 and
+                college.lower() not in ["unknown", "tes"] and
+                "college" not in college.lower() and
+                    "university" not in college.lower()):
+                college = f"{college} College"
+
+            # Add cleaned college to list
+            cleaned_colleges.append(college if college else "Unknown")
+
+        # Create a direct mapping dictionary
+        college_stats = {}
+        for college in cleaned_colleges:
+            if college not in college_stats:
+                college_stats[college] = 0
+            college_stats[college] += 1
+
+        # Sort colleges by count
+        sorted_stats = dict(sorted(college_stats.items(), key=lambda item: item[1], reverse=True))
+
+        return sorted_stats
+
+    def generate_stats_with_normalised_values(self, documents):
+        """
+        Generate statistics with normalised categorical values
+        Args:
+            documents (list): List of interview documents
+        Returns:
             dict: Statistics with normalised values
         """
+        import re
+
         stats = {
             "gender": {},
             "college": {},
@@ -259,43 +494,23 @@ class DataNormaliser:
             "course_types": {}
         }
 
-        # Normalise colleges
-        _, _, college_clusters = self.normalise_field_values(
-            documents, "college", "college")
-
-        # Count normalised colleges
-        for college, originals in college_clusters.items():
-            stats["college"][college] = len(originals)
+        # Use enhanced college normalisation
+        stats["college"] = self.normalise_college_names(documents)
 
         # Normalise and count genders
         _, _, gender_clusters = self.normalise_field_values(
             documents, "gender", "gender")
-
         for gender, originals in gender_clusters.items():
             stats["gender"][gender] = len(originals)
 
         # Normalise and count age groups
         _, _, age_clusters = self.normalise_field_values(
             documents, "age_group", "age_group")
-
         for age, originals in age_clusters.items():
             stats["age_group"][age] = len(originals)
 
         # Extract and normalise subjects
-        subjects = []
-        for doc in documents:
-            if ("responses" in doc and
-                "about_user" in doc["responses"] and
-                    "study_field" in doc["responses"]["about_user"]):
-                subject = doc["responses"]["about_user"]["study_field"]
-                if subject:
-                    subjects.append(subject)
-
-        _, subject_clusters = self.cluster_similar_values(
-            subjects, "subject")
-
-        for subject, originals in subject_clusters.items():
-            stats["subjects"][subject] = len(originals)
+        stats["subjects"] = self.extract_subjects_from_transcripts(documents)
 
         # Detect course types from transcripts using regex
         course_patterns = {
