@@ -1,11 +1,9 @@
-from thematic_analytics import (
-    extract_user_prompts,
-    preprocess_text,
-    extract_key_terms,
+from keyword_analysis import (
     identify_themes_with_keywords,
-    generate_ai_thematic_analysis,
     format_keyword_themes
 )
+from themes_analysis import generate_ai_thematic_analysis
+
 from login import setup_admin_page
 from database import get_database, test_connection
 import config
