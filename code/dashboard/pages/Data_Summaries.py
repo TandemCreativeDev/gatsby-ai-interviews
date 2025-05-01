@@ -1,17 +1,14 @@
-from data_normaliser import DataNormaliser
-from data_summary import (
+from student_data_summary import (
     generate_consistent_meta_summary,
     calculate_demographic_stats,
-    analyze_themes
+    analyse_themes
 )
 from login import setup_admin_page
-from database import get_database, test_connection
+from database import get_database
 import config
 import sys
 import os
 import streamlit as st
-from datetime import datetime
-from bson import ObjectId
 
 # Add parent directory to path so we can import from parent modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -30,24 +27,7 @@ st.write("Generate a consistent summary of transcripts in a collection.")
 
 st.header("Transcript Collection Summary")
 
-# Get available collections
-db = get_database()
-if db is not None:
-    # This returns a list of collections in the database
-    available_collections = test_connection()
-    if not available_collections:
-        error_msg = ("No collections found in the database. "
-                     "Please check your MongoDB connection.")
-        st.error(error_msg)
-        raise ValueError(error_msg)
-else:
-    error_msg = ("Could not connect to the database. "
-                 "Please check your MongoDB connection.")
-    st.error(error_msg)
-    raise ValueError(error_msg)
-
-# Collection selection dropdown
-collection_options = available_collections
+collection_options = config.MONGODB_COLLECTION_NAME.values()
 
 selected_collection = st.selectbox(
     "Select MongoDB Collection",
@@ -130,14 +110,14 @@ if 'interviews' in st.session_state and st.button("Generate Consistent Summary")
             st.json(demographic_stats)
 
             # Calculate theme statistics
-            theme_stats = analyze_themes(interviews)
+            theme_stats = analyse_themes(interviews)
             st.write("Themes:")
             st.json(theme_stats)
 
             st.divider()
 
         # Generate meta-summary using consistent processing method
-        meta_summary, normalisation_info = generate_consistent_meta_summary(
+        meta_summary, normalisation_info, docs_to_update = generate_consistent_meta_summary(
             interviews,
             normalise=use_normalisation,
             show_normalisation=show_normalisation_details
@@ -145,6 +125,7 @@ if 'interviews' in st.session_state and st.button("Generate Consistent Summary")
 
         # Store summary in session state
         st.session_state['meta_summary'] = meta_summary
+        st.session_state['docs_to_update'] = docs_to_update
 
         # Store normalisation info in session state
         if use_normalisation:
@@ -207,8 +188,8 @@ if 'interviews' in st.session_state and st.button("Generate Consistent Summary")
         # Add explanation of normalised data
         if use_normalisation:
             st.info("""
-            ℹ️ **Note on Data Normalisation** 
-            
+            ℹ️ **Note on Data Normalisation**
+
             This summary uses data normalisation to group similar entries together (e.g., "Fareham College" and "fareham college").
             This improves accuracy by handling variations in spelling, capitalization, and formatting.
             """)
@@ -217,6 +198,39 @@ if 'interviews' in st.session_state and st.button("Generate Consistent Summary")
                 st.write(
                     "Enable 'Show normalisation details' in the options to see how data was normalised.")
 
+        # Add button to update the database with normalised data
+        if use_normalisation and docs_to_update:
+            st.divider()
+            st.subheader("Update Database with Normalised Data")
+
+            # Preview the data to be updated
+            with st.expander(f"Preview Updates ({len(docs_to_update)} documents)"):
+
+                st.write(f"**Number of documents to update:** {len(docs_to_update)}")
+
+                # Show documents with most course types
+                st.subheader("Documents with most course types")
+                course_sorted_docs = sorted(docs_to_update, key=lambda x: len(x.get("course_types", [])), reverse=True)
+
+                for i, doc in enumerate(course_sorted_docs[:5]):
+                    num_course_types = len(doc.get("course_types", []))
+                    st.write(f"**Document {i+1} ({num_course_types} course types):**")
+                    st.json({k: v for k, v in doc.items() if k != "id"})
+
+                # Show documents with most subjects
+                st.subheader("Documents with most subjects")
+                subject_sorted_docs = sorted(docs_to_update, key=lambda x: len(x.get("subjects", [])), reverse=True)
+
+                for i, doc in enumerate(subject_sorted_docs[:5]):
+                    num_subjects = len(doc.get("subjects", []))
+                    st.write(f"**Document {i+1} ({num_subjects} subjects):**")
+                    st.json({k: v for k, v in doc.items() if k != "id"})
+
+            # Determine collection type
+            collection_type = "Staff" if "staff" in selected_collection.lower() else "Student"
+
+        # Store summary in session state
+        st.session_state['meta_summary'] = meta_summary
 
 # Add quick links to other summary types for comparison
 st.sidebar.header("Summary Options")
