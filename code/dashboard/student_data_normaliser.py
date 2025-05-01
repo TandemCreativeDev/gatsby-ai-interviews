@@ -261,7 +261,7 @@ class DataNormaliser:
                     canonical = mapping.get(cleaned,
                                             ' '.join(word.capitalize() for word in cleaned.split()))
 
-                original_to_canonical[original] = canonical
+                original_to_canonical[original] = ' '.join(word.capitalize() for word in canonical.split())
                 cluster_info[canonical].append(original)
 
         return original_to_canonical, dict(cluster_info)
@@ -478,13 +478,16 @@ class DataNormaliser:
 
     def generate_stats_with_normalised_values(self, documents):
         """
-        Generate statistics with normalised categorical values
+        Generate statistics with normalised categorical values and create document update list
+
         Args:
             documents (list): List of interview documents
+
         Returns:
-            dict: Statistics with normalised values
+            tuple: (statistics dict, list of document update dicts)
         """
         import re
+        from collections import defaultdict
 
         stats = {
             "gender": {},
@@ -494,18 +497,60 @@ class DataNormaliser:
             "course_types": {}
         }
 
+        # List to collect document updates
+        docs_to_update = []
+
         # Use enhanced college normalisation
         stats["college"] = self.normalise_college_names(documents)
 
         # Normalise and count gender
         _, _, gender_clusters = self.normalise_field_values(documents, "gender", "gender")
         stats["gender"] = {}
+
+        # Normalise and count age groups
+        _, _, age_clusters = self.normalise_field_values(documents, "age_group", "age_group")
+        stats["age_group"] = {}
+
+        # Common subject names to look for
+        subject_patterns = {
+            'Mathematics': [r'\bmaths\b', r'\bmathematics\b', r'\bfurther maths\b'],
+            'Biology': [r'\bbiology\b', r'\bbio\b'],
+            'Chemistry': [r'\bchemistry\b', r'\bchem\b'],
+            'Physics': [r'\bphysics\b'],
+            'Psychology': [r'\bpsychology\b', r'\bpsych\b'],
+            'English': [r'\benglish\b'],
+            'Computer Science': [r'\bcomputer science\b', r'\bcomputing\b', r'\bIT\b', r'\binformation technology\b'],
+            'Business': [r'\bbusiness\b', r'\beconomics\b'],
+            'Art & Design': [r'\bart\b', r'\bdesign\b', r'\bgraphics\b', r'\bgraphic design\b'],
+            'History': [r'\bhistory\b'],
+            'Geography': [r'\bgeography\b'],
+            'Sociology': [r'\bsociology\b'],
+            'Health & Social Care': [r'\bhealth\b', r'\bsocial care\b', r'\bhealthcare\b'],
+            'Engineering': [r'\bengineering\b'],
+            'Media': [r'\bmedia\b', r'\bjournalism\b'],
+            'Sport': [r'\bsport\b', r'\bpe\b', r'\bphysical education\b'],
+            'Animal Management': [r'\banimal\b']
+        }
+
+        # Course type patterns
+        course_patterns = {
+            "A-levels": r'\b[aA][\s-]levels?\b|\b[aA] level\b',
+            "BTECs": r'\bbtecs?\b|\bBTECs?\b',
+            "Apprenticeships": r'\bapprenticeships?\b|\bApprenticeships?\b',
+            "T-levels": r'\b[tT][\s-]levels?\b|\b[tT] level\b'
+        }
+
+        # Extract subjects for all documents and track in stats
+        subject_mentions = defaultdict(int)
+
         for doc in documents:
+            # Initialize update dict with document ID
+            update_doc = doc.copy()
+
+            # Process gender
             gender = "Unknown"
-            # Try to get gender from the document
             if "gender" in doc and doc["gender"]:
-                gender = doc["gender"].strip().lower()
-            # If not available, check in responses.about_user
+                gender = doc["gender"].strip()
             elif "responses" in doc and doc["responses"] and "about_user" in doc["responses"]:
                 about_user = doc["responses"]["about_user"]
                 if "gender" in about_user:
@@ -516,55 +561,90 @@ class DataNormaliser:
                     elif "binary" in about_user["gender"].lower():
                         gender = "Non-binary"
 
-            # Count the gender group if found
-            if gender:
-                if gender not in stats["gender"]:
-                    stats["gender"][gender] = 0
-                stats["gender"][gender] += 1
+            update_doc["gender"] = gender
 
-        # Normalise and count age groups
-        _, _, age_clusters = self.normalise_field_values(documents, "age_group", "age_group")
-        stats["age_group"] = {}
+            if gender not in stats["gender"]:
+                stats["gender"][gender] = 0
+            stats["gender"][gender] += 1
 
-        for doc in documents:
+            # Process age group
             age_group = "Unknown"
-
-            # Try to get age_group from the document
             if "age_group" in doc and doc["age_group"]:
-                age_group = doc["age_group"].strip().lower()
-            # If not available, check in responses.about_user.over_25
+                age_group = doc["age_group"].strip()
             elif "responses" in doc and doc["responses"] and "about_user" in doc["responses"]:
                 about_user = doc["responses"]["about_user"]
                 if "over_25" in about_user:
                     age_group = "Over 25" if about_user["over_25"] else "Under 25"
 
-            # Count the age group if found
-            if age_group:
-                if age_group not in stats["age_group"]:
-                    stats["age_group"][age_group] = 0
-                stats["age_group"][age_group] += 1
+            update_doc["age_group"] = age_group
 
-        # Extract and normalise subjects
-        stats["subjects"] = self.extract_subjects_from_transcripts(documents)
+            if age_group not in stats["age_group"]:
+                stats["age_group"][age_group] = 0
+            stats["age_group"][age_group] += 1
 
-        # Detect course types from transcripts using regex
-        course_patterns = {
-            "A-levels": r'\b[aA][\s-]levels?\b|\b[aA] level\b',
-            "BTECs": r'\bbtecs?\b|\bBTECs?\b',
-            "Apprenticeships": r'\bapprenticeships?\b|\bApprenticeships?\b',
-            "T-levels": r'\b[tT][\s-]levels?\b|\b[tT] level\b'
-        }
+            # Process college
+            college = "Unknown"
+            if "college" in doc and doc["college"]:
+                original_college = doc["college"].strip()
+                college = original_college
 
-        # Count course types
-        for doc in documents:
+                for cluster_name, variations in gender_clusters.items():
+                    if original_college.lower() in [v.lower() for v in variations]:
+                        college = cluster_name
+                        break
+
+            update_doc["college"] = college
+
+            # Process subjects
+            doc_subjects = []
+
+            # Get study field from responses if available
+            study_field = None
+            if ("responses" in doc and
+                "about_user" in doc["responses"] and
+                    "study_field" in doc["responses"]["about_user"]):
+                study_field = doc["responses"]["about_user"]["study_field"]
+
+            # Get transcript text
             transcript = doc.get("transcript", "")
+
+            # Combine for analysis
+            text_to_analyze = ""
+            if study_field:
+                text_to_analyze += study_field + " "
+            if transcript:
+                text_to_analyze += transcript
+            text_to_analyze = text_to_analyze.lower()
+
+            # Find subjects mentioned in this document
+            for subject, patterns in subject_patterns.items():
+                for pattern in patterns:
+                    if re.search(pattern, text_to_analyze):
+                        doc_subjects.append(subject)
+                        subject_mentions[subject] += 1
+                        break  # Only count each subject once per document
+
+            update_doc["subjects"] = doc_subjects
+
+            # Process course types
+            doc_course_types = []
+
             if transcript:
                 for course_type, pattern in course_patterns.items():
                     if re.search(pattern, transcript):
+                        doc_course_types.append(course_type)
                         stats["course_types"][course_type] = stats["course_types"].get(
                             course_type, 0) + 1
 
-        return stats
+            update_doc["course_types"] = doc_course_types
+
+            # Add document to update list
+            docs_to_update.append(update_doc)
+
+        # Update overall stats
+        stats["subjects"] = dict(subject_mentions)
+
+        return stats, docs_to_update
 
     def show_normalisation_details(self, cluster_info, category_name):
         """
