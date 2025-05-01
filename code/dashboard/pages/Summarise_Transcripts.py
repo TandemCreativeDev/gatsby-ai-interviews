@@ -214,7 +214,8 @@ def generate_meta_summary(interviews):
             approximate percentages in ranges: under 15%, 15-30%, 30-70%,
             71-85%, over 85%) based on the consistent data analysis listed below.
             Do not stray from the numbers contained there, these are definitive.
-            Include this data at the top of your response.
+            Include this data at the top of your response, exactly how it is presented,
+            including the tables.
             4. Present insights on how different demographic groups may have
             different perspectives or experiences.
             5. Highlight any notable consensus or divergence in opinions.
