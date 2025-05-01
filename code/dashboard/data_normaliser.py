@@ -497,17 +497,52 @@ class DataNormaliser:
         # Use enhanced college normalisation
         stats["college"] = self.normalise_college_names(documents)
 
-        # Normalise and count genders
-        _, _, gender_clusters = self.normalise_field_values(
-            documents, "gender", "gender")
-        for gender, originals in gender_clusters.items():
-            stats["gender"][gender] = len(originals)
+        # Normalise and count gender
+        _, _, gender_clusters = self.normalise_field_values(documents, "gender", "gender")
+        stats["gender"] = {}
+        for doc in documents:
+            gender = "Unknown"
+            # Try to get gender from the document
+            if "gender" in doc and doc["gender"]:
+                gender = doc["gender"].strip().lower()
+            # If not available, check in responses.about_user
+            elif "responses" in doc and doc["responses"] and "about_user" in doc["responses"]:
+                about_user = doc["responses"]["about_user"]
+                if "gender" in about_user:
+                    if "female" in about_user["gender"].lower():
+                        gender = "Female"
+                    elif "male" in about_user["gender"].lower():
+                        gender = "Male"
+                    elif "binary" in about_user["gender"].lower():
+                        gender = "Non-binary"
+
+            # Count the gender group if found
+            if gender:
+                if gender not in stats["gender"]:
+                    stats["gender"][gender] = 0
+                stats["gender"][gender] += 1
 
         # Normalise and count age groups
-        _, _, age_clusters = self.normalise_field_values(
-            documents, "age_group", "age_group")
-        for age, originals in age_clusters.items():
-            stats["age_group"][age] = len(originals)
+        _, _, age_clusters = self.normalise_field_values(documents, "age_group", "age_group")
+        stats["age_group"] = {}
+
+        for doc in documents:
+            age_group = "Unknown"
+
+            # Try to get age_group from the document
+            if "age_group" in doc and doc["age_group"]:
+                age_group = doc["age_group"].strip().lower()
+            # If not available, check in responses.about_user.over_25
+            elif "responses" in doc and doc["responses"] and "about_user" in doc["responses"]:
+                about_user = doc["responses"]["about_user"]
+                if "over_25" in about_user:
+                    age_group = "Over 25" if about_user["over_25"] else "Under 25"
+
+            # Count the age group if found
+            if age_group:
+                if age_group not in stats["age_group"]:
+                    stats["age_group"][age_group] = 0
+                stats["age_group"][age_group] += 1
 
         # Extract and normalise subjects
         stats["subjects"] = self.extract_subjects_from_transcripts(documents)
