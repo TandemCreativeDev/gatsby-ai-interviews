@@ -243,7 +243,7 @@ def get_interviews(username=None, limit=100, type="Student", role=None):
             if username:
                 filter_query["username"] = {
                     "$regex": f"^{username}", "$options": "i"}
-                    
+
             # Add role filter for Staff interviews
             if role and type == "Staff" and role != "All":
                 filter_query["role"] = role
@@ -279,10 +279,10 @@ def get_staff_roles():
         if collection is not None:
             # Find unique roles in the staff collection
             roles = collection.distinct("role")
-            
+
             # Add "All" option and sort
             all_roles = ["All"] + sorted(roles)
-            
+
             logger.info(f"Retrieved {len(roles)} unique staff roles")
             return all_roles
         else:
