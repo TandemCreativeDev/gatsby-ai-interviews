@@ -1,10 +1,5 @@
-import streamlit as st
-import pandas as pd
-from database import get_database
-import json
 from datetime import datetime
-import re
-from data_normaliser import DataNormaliser
+from student_data_normaliser import DataNormaliser
 
 
 def calculate_demographic_stats(interviews, normalise=True):
@@ -19,103 +14,17 @@ def calculate_demographic_stats(interviews, normalise=True):
     Returns:
         dict: Demographics statistics and normalisation info if requested
     """
+    normaliser = DataNormaliser()
     if normalise:
-        # Use DataNormaliser to normalise all categorical values
-        normaliser = DataNormaliser()
-        stats = normaliser.generate_stats_with_normalised_values(interviews)
-
-        # Return normalisation details for UI display
-        _, _, college_clusters = normaliser.normalise_field_values(
-            interviews, "college", "college")
-
-        # Extract and normalise subjects
-        subjects = []
-        for doc in interviews:
-            if ("responses" in doc and
-                "about_user" in doc["responses"] and
-                    "study_field" in doc["responses"]["about_user"]):
-                subject = doc["responses"]["about_user"].get("study_field")
-                if subject:
-                    subjects.append(subject)
-
-        _, subject_clusters = normaliser.cluster_similar_values(
-            subjects, "subject")
-
-        normalisation_info = {
-            "college_clusters": college_clusters,
-            "subject_clusters": subject_clusters
-        }
-
-        return stats, normalisation_info
+        stats, docs_to_update = normaliser.generate_stats_with_normalised_values(interviews)
     else:
-        # Original implementation for non-normalised statistics
-        # Initialize counters
-        stats = {
-            "gender": {},
-            "college": {},
-            "age_group": {},
-            "subjects": {},
-            "course_types": {}
-        }
-
-        # Course type patterns for regex detection
-        course_patterns = {
-            "A-levels": r'\b[aA][\s-]levels?\b|\b[aA] level\b',
-            "BTECs": r'\bbtecs?\b|\bBTECs?\b',
-            "Apprenticeships": r'\bapprenticeships?\b|\bApprenticeships?\b',
-            "T-levels": r'\b[tT][\s-]levels?\b|\b[tT] level\b'
-        }
-
-        # Process each interview
-        for interview in interviews:
-            # Gender counts
-            gender = interview.get("gender", "Unknown")
-            if gender:
-                stats["gender"][gender] = stats["gender"].get(gender, 0) + 1
-            else:
-                stats["gender"]["Unknown"] = stats["gender"].get(
-                    "Unknown", 0) + 1
-
-            # College counts
-            college = interview.get("college", "Unknown")
-            if college:
-                stats["college"][college] = stats["college"].get(
-                    college, 0) + 1
-            else:
-                stats["college"]["Unknown"] = stats["college"].get(
-                    "Unknown", 0) + 1
-
-            # Age group counts
-            age_group = interview.get("age_group", "Unknown")
-            if age_group:
-                stats["age_group"][age_group] = stats["age_group"].get(
-                    age_group, 0) + 1
-            else:
-                stats["age_group"]["Unknown"] = stats["age_group"].get(
-                    "Unknown", 0) + 1
-
-            # Extract subjects from responses
-            if "responses" in interview and "about_user" in interview["responses"]:
-                study_field = interview["responses"]["about_user"].get(
-                    "study_field")
-                if study_field:
-                    stats["subjects"][study_field] = stats["subjects"].get(
-                        study_field, 0) + 1
-
-            # Extract course types from transcript using regex
-            transcript = interview.get("transcript", "")
-            if transcript:
-                for course_type, pattern in course_patterns.items():
-                    if re.search(pattern, transcript):
-                        stats["course_types"][course_type] = stats["course_types"].get(
-                            course_type, 0) + 1
-
-        return stats, {}
+        stats, docs_to_update = normaliser.generate_stats_with_normalised_values(interviews, use_clustering=False)
+    return stats, {}, docs_to_update
 
 
-def analyze_themes(interviews):
+def analyse_themes(interviews):
     """
-    Analyze themes from interview documents
+    analyse themes from interview documents
     This processes the raw data without relying on AI to ensure consistency
 
     Args:
@@ -198,8 +107,10 @@ def get_percentage_range(percentage):
         return "under 15%"
     elif percentage <= 30:
         return "15-30%"
+    elif percentage <= 50:
+        return "30-50%"
     elif percentage <= 70:
-        return "30-70%"
+        return "50-70%"
     elif percentage <= 85:
         return "71-85%"
     else:
@@ -248,34 +159,34 @@ def format_demographic_table(demographic_stats, total_count):
         demographic_stats["course_types"], total_count)
 
     # Build markdown table
-    markdown = f"""
+    markdown = """
 | Gender | Count | Percentage |
 |--------|-------|------------|
 """
     for gender, stats in gender_stats.items():
         markdown += f"| {gender} | {stats['count']} | {stats['percentage']}% |\n"
 
-    markdown += f"""
+    markdown += """
 | College | Count | Percentage |
 |---------|-------|------------|
 """
     for college, stats in college_stats.items():
         markdown += f"| {college} | {stats['count']} | {stats['percentage']}% |\n"
 
-    markdown += f"""
+    markdown += """
 | Age Group | Count | Percentage |
 |-----------|-------|------------|
 """
     for age_group, stats in age_group_stats.items():
         markdown += f"| {age_group} | {stats['count']} | {stats['percentage']}% |\n"
 
-    markdown += f"""
+    markdown += """
 ### Subjects Mentioned
 """
     for subject, count in subjects_list:
         markdown += f"- {subject} ({count})\n"
 
-    markdown += f"""
+    markdown += """
 | Course Type | Count | Percentage |
 |-------------|-------|------------|
 """
@@ -302,7 +213,7 @@ def format_theme_analysis(theme_stats):
                                 theme_stats["ai_for_learning"]["total"]) * 100) if theme_stats["ai_for_learning"]["total"] > 0 else 0
     ai_learning_range = get_percentage_range(ai_learning_percent)
 
-    markdown += f"#### Using AI for Learning\n"
+    markdown += "#### Using AI for Learning\n"
     markdown += f"{ai_learning_range} of students ({theme_stats['ai_for_learning']['count']}/{theme_stats['ai_for_learning']['total']}) "
     markdown += "reported using AI tools to support their learning.\n\n"
 
@@ -311,7 +222,7 @@ def format_theme_analysis(theme_stats):
                                    theme_stats["ai_for_assignments"]["total"]) * 100) if theme_stats["ai_for_assignments"]["total"] > 0 else 0
     ai_assignments_range = get_percentage_range(ai_assignments_percent)
 
-    markdown += f"#### Using AI for Assignments\n"
+    markdown += "#### Using AI for Assignments\n"
     markdown += f"{ai_assignments_range} of students ({theme_stats['ai_for_assignments']['count']}/{theme_stats['ai_for_assignments']['total']}) "
     markdown += "indicated they use AI for completing assignments and coursework.\n\n"
 
@@ -320,7 +231,7 @@ def format_theme_analysis(theme_stats):
                                theme_stats["ai_outside_learning"]["total"]) * 100) if theme_stats["ai_outside_learning"]["total"] > 0 else 0
     ai_outside_range = get_percentage_range(ai_outside_percent)
 
-    markdown += f"#### Using AI Outside Learning\n"
+    markdown += "#### Using AI Outside Learning\n"
     markdown += f"{ai_outside_range} of students ({theme_stats['ai_outside_learning']['count']}/{theme_stats['ai_outside_learning']['total']}) "
     markdown += "use AI tools outside of their academic work.\n\n"
 
@@ -337,7 +248,7 @@ def format_theme_analysis(theme_stats):
         neutral_range = get_percentage_range(neutral_percent)
         negative_range = get_percentage_range(negative_percent)
 
-        markdown += f"#### Attitudes Towards AI in Education\n"
+        markdown += "#### Attitudes Towards AI in Education\n"
         markdown += "Student attitudes toward AI in education were:\n"
         markdown += f"- Positive: {positive_range} ({theme_stats['attitudes']['positive']} students)\n"
         markdown += f"- Neutral: {neutral_range} ({theme_stats['attitudes']['neutral']} students)\n"
@@ -348,7 +259,7 @@ def format_theme_analysis(theme_stats):
                              theme_stats["concerns_about_ai"]["total"]) * 100) if theme_stats["concerns_about_ai"]["total"] > 0 else 0
     concerns_range = get_percentage_range(concerns_percent)
 
-    markdown += f"#### Concerns About AI\n"
+    markdown += "#### Concerns About AI\n"
     markdown += f"{concerns_range} of students ({theme_stats['concerns_about_ai']['count']}/{theme_stats['concerns_about_ai']['total']}) "
     markdown += "expressed concerns about AI.\n"
 
@@ -372,13 +283,13 @@ def generate_consistent_meta_summary(interviews, normalise=True, show_normalisat
     timestamp = datetime.now().strftime("%d %B %Y, %H:%M")
 
     # Process demographics with normalisation if requested
-    demographic_stats, normalisation_info = calculate_demographic_stats(
+    demographic_stats, normalisation_info, docs_to_update = calculate_demographic_stats(
         interviews, normalise)
     demographic_table = format_demographic_table(
         demographic_stats, total_count)
 
     # Process themes
-    theme_stats = analyze_themes(interviews)
+    theme_stats = analyse_themes(interviews)
     theme_analysis = format_theme_analysis(theme_stats)
 
     # Combine into complete summary
@@ -402,4 +313,4 @@ This improves accuracy by accounting for variations in spelling, capitalisation,
 For more details, see the 'Normalisation Details' section in the sidebar.
 """
 
-    return summary, normalisation_info
+    return summary, normalisation_info, docs_to_update
