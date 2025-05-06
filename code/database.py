@@ -219,7 +219,7 @@ def upload_local_backups(type="Student"):
             logger.error(f"Error processing backup file {backup_path}: {e}")
 
 
-def get_interviews(username=None, limit=100, type="Student", role=None):
+def get_interviews(username=None, type="Student", role=None):
     """
     Retrieve interview data from MongoDB
 
@@ -250,7 +250,7 @@ def get_interviews(username=None, limit=100, type="Student", role=None):
 
             # Query database
             cursor = collection.find(filter_query).sort(
-                "timestamp", -1).limit(limit)
+                "timestamp", -1)
 
             # Convert cursor to list
             interviews = list(cursor)
