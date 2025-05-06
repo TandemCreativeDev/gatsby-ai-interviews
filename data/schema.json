@@ -1,5 +1,7 @@
 {
   "college": "Bishop Burton College",
+  "gender": "Female",
+  "age_group": "Under 25",
   "responses": {
     "about_user": {
       "study_field": "Computer Science",
