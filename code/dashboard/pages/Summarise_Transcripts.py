@@ -1,4 +1,4 @@
-from student_data_summary import generate_consistent_meta_summary
+from student_data_summary import generate_interview_summary
 from login import setup_admin_page
 from database import get_database, test_connection
 import config
@@ -183,9 +183,8 @@ def generate_meta_summary(interviews):
             interviews, recalculate if in doubt.
             """
         else:
-            meta_summary, _, _ = generate_consistent_meta_summary(
-                interviews
-            )
+            # Generate summary using normalized data already in MongoDB
+            meta_summary = generate_interview_summary(interviews)
             user_prompt = f"""
             # FE Student Summary
 
