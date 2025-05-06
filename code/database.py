@@ -382,6 +382,159 @@ def reanalyse_transcript(interview_id, type="Student"):
         return False
 
 
+def update_documents_with_normalised_data(documents, collection_type):
+    """
+    Update multiple documents in MongoDB with normalised data using a simpler approach
+    with direct document updates one by one
+
+    Args:
+        documents (list): List of document objects with normalised data
+        collection_type (str): Type of collection ("Student" or "Staff")
+
+    Returns:
+        tuple: (success_count, error_message)
+    """
+    # Configure logging to also write to a file for debugging
+    import logging
+    file_handler = logging.FileHandler('/tmp/mongodb_update.log')
+    file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
+    
+    # Also print to stdout for immediate visibility
+    import sys
+    print(f"Starting MongoDB update for {len(documents)} documents of type {collection_type}")
+    
+    try:
+        collection = get_collection(collection_type)
+        if collection is None:
+            error_msg = f"Failed to get collection for type: {collection_type}"
+            logger.error(error_msg)
+            print(error_msg)
+            return 0, error_msg
+        
+        # Test connection with reduced timeout
+        try:
+            print("Testing MongoDB connection...")
+            import pymongo
+            from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
+            
+            # Explicitly set a shorter server selection timeout
+            client = collection.database.client
+            client.admin.command('ismaster', serverSelectionTimeoutMS=5000)
+            print("MongoDB connection test successful")
+        except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+            error_msg = f"MongoDB connection test failed: {str(e)}"
+            logger.error(error_msg)
+            print(error_msg)
+            return 0, error_msg
+        
+        print(f"Starting updates for {len(documents)} documents")
+        logger.info(f"Starting updates for {len(documents)} documents")
+        
+        # Print first document for debugging
+        if documents:
+            first_doc = documents[0]
+            print(f"First document: username={first_doc.get('username')}, fields={list(first_doc.keys())}")
+        
+        # Use a very small batch size to prevent timeouts
+        success_count = 0
+        error_count = 0
+        batch_size = 5  # Very small batches
+        timestamp = datetime.datetime.now()
+        
+        # Process in tiny batches
+        for i in range(0, len(documents), batch_size):
+            batch = documents[i:i+batch_size]
+            batch_msg = f"Processing batch {i//batch_size + 1}/{(len(documents)-1)//batch_size + 1}"
+            print(batch_msg)
+            logger.info(batch_msg)
+            
+            # Process each document in batch
+            for doc in batch:
+                try:
+                    # Get username - this is critical for our update
+                    username = doc.get("username")
+                    
+                    if not username:
+                        error_msg = f"Document missing username: {doc}"
+                        print(error_msg)
+                        logger.warning(error_msg)
+                        error_count += 1
+                        continue
+                    
+                    print(f"Updating document for username: {username}")
+                    
+                    # Create update fields
+                    update_fields = {}
+                    
+                    # Add normalized fields that exist
+                    if "college" in doc and doc["college"]:
+                        update_fields["college"] = doc["college"]
+                    
+                    if "gender" in doc and doc["gender"]:
+                        update_fields["gender"] = doc["gender"]
+                    
+                    if "age_group" in doc and doc["age_group"]:
+                        update_fields["age_group"] = doc["age_group"]
+                    
+                    if "subjects" in doc:
+                        update_fields["subjects"] = doc.get("subjects", [])
+                    
+                    if "course_types" in doc:
+                        update_fields["course_types"] = doc.get("course_types", [])
+                    
+                    # Add timestamp
+                    update_fields["normalised_at"] = timestamp
+                    
+                    # Directly update this document by username with write concern
+                    result = collection.update_one(
+                        {"username": username},
+                        {"$set": update_fields},
+                        upsert=False,  # Don't create if doesn't exist
+                        bypass_document_validation=True  # Skip validation for speed
+                    )
+                    
+                    # Check if update was successful
+                    if result.modified_count == 1:
+                        success_count += 1
+                        print(f"Successfully updated document for: {username}")
+                    else:
+                        error_count += 1
+                        print(f"No document found or no changes for username: {username}")
+                
+                except Exception as e:
+                    error_count += 1
+                    error_msg = f"Error updating document: {str(e)}"
+                    print(error_msg)
+                    logger.error(error_msg)
+            
+            # Log progress after each batch
+            progress_msg = f"Progress: {i+len(batch)}/{len(documents)} documents processed. Successes: {success_count}, Errors: {error_count}"
+            print(progress_msg)
+            logger.info(progress_msg)
+        
+        # Final status
+        final_msg = f"Completed updates: {success_count} successes, {error_count} errors"
+        print(final_msg)
+        logger.info(final_msg)
+        
+        if success_count == 0:
+            return 0, f"No documents were updated. {error_count} errors occurred."
+        elif error_count > 0:
+            return success_count, f"Updated {success_count} documents with {error_count} errors."
+        else:
+            return success_count, None
+        
+    except Exception as e:
+        error_msg = f"Failed to update documents with normalised data: {str(e)}"
+        print(error_msg)
+        logger.error(error_msg)
+        return 0, error_msg
+    finally:
+        # Remove file handler to avoid duplicate logging
+        logger.removeHandler(file_handler)
+
+
 def _create_backup(document):
     """Helper function to create JSON backup with proper datetime handling"""
     try:

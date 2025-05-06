@@ -187,6 +187,7 @@ if 'interviews' in st.session_state and st.button("Generate Consistent Summary")
 
         # Add explanation of normalised data
         if use_normalisation:
+            print(docs_to_update[0:3])
             st.info("""
             ℹ️ **Note on Data Normalisation**
 
@@ -228,6 +229,105 @@ if 'interviews' in st.session_state and st.button("Generate Consistent Summary")
 
             # Determine collection type
             collection_type = "Staff" if "staff" in selected_collection.lower() else "Student"
+            print(collection_type)
+
+            # Initialize update state tracking variables
+            if 'update_started' not in st.session_state:
+                st.session_state.update_started = False
+            
+            if 'update_completed' not in st.session_state:
+                st.session_state.update_completed = False
+                
+            if 'update_results' not in st.session_state:
+                st.session_state.update_results = None
+                
+            # Store collection type and documents for use across reruns
+            if 'selected_collection_type' not in st.session_state:
+                st.session_state.selected_collection_type = collection_type
+                
+            if 'docs_to_update_processed' not in st.session_state:
+                # Process documents once and store in session state
+                simple_docs = []
+                for doc in docs_to_update:
+                    simple_doc = {
+                        "username": doc.get("username"),
+                        "college": doc.get("college"),
+                        "gender": doc.get("gender"),
+                        "age_group": doc.get("age_group"),
+                        "subjects": doc.get("subjects", []),
+                        "course_types": doc.get("course_types", [])
+                    }
+                    simple_docs.append(simple_doc)
+                st.session_state.docs_to_update_processed = simple_docs
+            
+            # Add button to update - disabled if update is in progress
+            update_button_key = f"update_docs_button_{collection_type}"
+            start_update = st.button(
+                f"Update {len(docs_to_update)} documents with normalised data", 
+                key=update_button_key,
+                disabled=st.session_state.update_started
+            )
+            
+            # Handle button click to start update
+            if start_update:
+                st.session_state.update_started = True
+                st.session_state.update_completed = False
+                st.rerun()  # Force rerun to show spinner
+                
+            # If update is started but not completed, do the update
+            if st.session_state.update_started and not st.session_state.update_completed:
+                with st.spinner(f"Updating {len(docs_to_update)} documents in database..."):
+                    try:
+                        from database import update_documents_with_normalised_data
+                        
+                        # Get the processed documents from session state
+                        safe_docs = st.session_state.docs_to_update_processed
+                        
+                        # Log update start 
+                        st.write(f"Starting update of {len(safe_docs)} documents...")
+                        
+                        # Call the update function with a very small batch size
+                        updated_count, error_msg = update_documents_with_normalised_data(
+                            safe_docs, st.session_state.selected_collection_type
+                        )
+                        
+                        # Store results
+                        st.session_state.update_results = {
+                            'count': updated_count,
+                            'error': error_msg
+                        }
+                        
+                    except Exception as e:
+                        # Catch any errors during update
+                        st.session_state.update_results = {
+                            'count': 0,
+                            'error': f"Update failed with error: {str(e)}"
+                        }
+                    
+                    # Mark update as completed
+                    st.session_state.update_completed = True
+                    st.session_state.update_started = False
+                    st.rerun()  # Force rerun to display results
+            
+            # Display update results if available
+            if st.session_state.update_completed and st.session_state.update_results:
+                result = st.session_state.update_results
+                if result.get('error'):
+                    st.error(f"Error updating documents: {result['error']}")
+                else:
+                    if result.get('count', 0) > 0:
+                        st.success(f"Successfully updated {result['count']} documents with normalised data")
+                    else:
+                        st.warning("No documents were updated")
+                
+                # Add option to reset and try again
+                if st.button("Reset Update State", key="reset_update"):
+                    # Clear update state
+                    st.session_state.update_started = False
+                    st.session_state.update_completed = False
+                    st.session_state.update_results = None
+                    st.session_state.pop('docs_to_update_processed', None)
+                    st.rerun()
 
         # Store summary in session state
         st.session_state['meta_summary'] = meta_summary

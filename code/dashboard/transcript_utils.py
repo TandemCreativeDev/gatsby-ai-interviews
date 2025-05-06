@@ -198,19 +198,18 @@ def render_interviews(container, interview_type, role=None):
                             )
                         with cols[1]:
                             col1, col2 = st.columns([1, 1])
-                            if not isAnalysed or interview_type == "Staff":
-                                with col1:
-                                    st.button(
-                                        ("Re-analyse" if isAnalysed
-                                         else "Analyse"),
-                                        key=f"analyse-{interview.get('_id')}",
-                                        on_click=reanalyse_and_refresh,
-                                        args=(
-                                            interview.get('_id'),
-                                            interview_type
-                                        ),
-                                        use_container_width=True
-                                    )
+                            with col1:
+                                st.button(
+                                    ("Re-analyse" if isAnalysed
+                                        else "Analyse"),
+                                    key=f"analyse-{interview.get('_id')}",
+                                    on_click=reanalyse_and_refresh,
+                                    args=(
+                                        interview.get('_id'),
+                                        interview_type
+                                    ),
+                                    use_container_width=True
+                                )
                             with col2:
                                 st.button(
                                     "Delete",

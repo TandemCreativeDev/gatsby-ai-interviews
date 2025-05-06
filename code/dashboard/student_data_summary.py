@@ -15,10 +15,7 @@ def calculate_demographic_stats(interviews, normalise=True):
         dict: Demographics statistics and normalisation info if requested
     """
     normaliser = DataNormaliser()
-    if normalise:
-        stats, docs_to_update = normaliser.generate_stats_with_normalised_values(interviews)
-    else:
-        stats, docs_to_update = normaliser.generate_stats_with_normalised_values(interviews, use_clustering=False)
+    stats, docs_to_update = normaliser.generate_stats_with_normalised_values(interviews)
     return stats, {}, docs_to_update
 
 

@@ -1,8 +1,11 @@
 {
+  "college": "Bishop Burton College",
   "responses": {
     "about_user": {
       "study_field": "Computer Science",
-      "career_aspiration": "Software Engineer"
+      "career_aspiration": "Software Engineer",
+      "gender": "Female",
+      "over_25": false
     },
     "ai_in_learning": {
       "uses_ai": true,
