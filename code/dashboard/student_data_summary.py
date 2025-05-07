@@ -126,30 +126,6 @@ def analyse_themes(interviews):
     return themes
 
 
-def get_percentage_range(percentage):
-    """
-    Convert percentage to a consistent range format
-
-    Args:
-        percentage (float): Percentage value
-
-    Returns:
-        str: Percentage range
-    """
-    if percentage < 15:
-        return "under 15%"
-    elif percentage <= 30:
-        return "15-30%"
-    elif percentage <= 50:
-        return "30-50%"
-    elif percentage <= 70:
-        return "50-70%"
-    elif percentage <= 85:
-        return "71-85%"
-    else:
-        return "over 85%"
-
-
 def format_demographic_table(demographic_stats, total_count):
     """
     Format demographic statistics as a markdown table
@@ -239,28 +215,25 @@ def format_theme_analysis(theme_stats):
     # AI for learning
     ai_learning_percent = round((theme_stats["ai_for_learning"]["count"] /
                                  theme_stats["ai_for_learning"]["total"]) * 100) if theme_stats["ai_for_learning"]["total"] > 0 else 0
-    ai_learning_range = get_percentage_range(ai_learning_percent)
 
     markdown += "#### Using AI for Learning\n"
-    markdown += f"{ai_learning_range} of students ({theme_stats['ai_for_learning']['count']}/{theme_stats['ai_for_learning']['total']}) "
+    markdown += f"{ai_learning_percent}% of students ({theme_stats['ai_for_learning']['count']}/{theme_stats['ai_for_learning']['total']}) "
     markdown += "reported using AI tools to support their learning.\n\n"
 
     # AI for assignments
     ai_assignments_percent = round((theme_stats["ai_for_assignments"]["count"] /
                                     theme_stats["ai_for_assignments"]["total"]) * 100) if theme_stats["ai_for_assignments"]["total"] > 0 else 0
-    ai_assignments_range = get_percentage_range(ai_assignments_percent)
 
     markdown += "#### Using AI for Assignments\n"
-    markdown += f"{ai_assignments_range} of students ({theme_stats['ai_for_assignments']['count']}/{theme_stats['ai_for_assignments']['total']}) "
+    markdown += f"{ai_assignments_percent}% of students ({theme_stats['ai_for_assignments']['count']}/{theme_stats['ai_for_assignments']['total']}) "
     markdown += "indicated they use AI for completing assignments and coursework.\n\n"
 
     # AI outside learning
     ai_outside_percent = round((theme_stats["ai_outside_learning"]["count"] /
                                 theme_stats["ai_outside_learning"]["total"]) * 100) if theme_stats["ai_outside_learning"]["total"] > 0 else 0
-    ai_outside_range = get_percentage_range(ai_outside_percent)
 
     markdown += "#### Using AI Outside Learning\n"
-    markdown += f"{ai_outside_range} of students ({theme_stats['ai_outside_learning']['count']}/{theme_stats['ai_outside_learning']['total']}) "
+    markdown += f"{ai_outside_percent} of students ({theme_stats['ai_outside_learning']['count']}/{theme_stats['ai_outside_learning']['total']}) "
     markdown += "use AI tools outside of their academic work.\n\n"
 
     # Attitudes
@@ -269,23 +242,18 @@ def format_theme_analysis(theme_stats):
         neutral_percent = round((theme_stats["attitudes"]["neutral"] / theme_stats["attitudes"]["total"]) * 100)
         negative_percent = round((theme_stats["attitudes"]["negative"] / theme_stats["attitudes"]["total"]) * 100)
 
-        positive_range = get_percentage_range(positive_percent)
-        neutral_range = get_percentage_range(neutral_percent)
-        negative_range = get_percentage_range(negative_percent)
-
         markdown += "#### Attitudes Towards AI in Education\n"
         markdown += "Student attitudes toward AI in education were:\n"
-        markdown += f"- Positive: {positive_range} ({theme_stats['attitudes']['positive']} students)\n"
-        markdown += f"- Neutral: {neutral_range} ({theme_stats['attitudes']['neutral']} students)\n"
-        markdown += f"- Negative: {negative_range} ({theme_stats['attitudes']['negative']} students)\n\n"
+        markdown += f"- Positive: {positive_percent}% ({theme_stats['attitudes']['positive']} students)\n"
+        markdown += f"- Neutral: {neutral_percent}% ({theme_stats['attitudes']['neutral']} students)\n"
+        markdown += f"- Negative: {negative_percent}% ({theme_stats['attitudes']['negative']} students)\n\n"
 
     # Concerns
     concerns_percent = round((theme_stats["concerns_about_ai"]["count"] /
                               theme_stats["concerns_about_ai"]["total"]) * 100) if theme_stats["concerns_about_ai"]["total"] > 0 else 0
-    concerns_range = get_percentage_range(concerns_percent)
 
     markdown += "#### Concerns About AI\n"
-    markdown += f"{concerns_range} of students ({theme_stats['concerns_about_ai']['count']}/{theme_stats['concerns_about_ai']['total']}) "
+    markdown += f"{concerns_percent}% of students ({theme_stats['concerns_about_ai']['count']}/{theme_stats['concerns_about_ai']['total']}) "
     markdown += "expressed concerns about AI.\n"
 
     return markdown
