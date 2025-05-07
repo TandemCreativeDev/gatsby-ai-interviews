@@ -1,4 +1,5 @@
 from student_data_summary import generate_interview_summary
+from staff_data_summary import generate_staff_summary
 from login import setup_admin_page
 from database import get_database
 import config
@@ -95,6 +96,7 @@ def generate_meta_summary(interviews):
         """
 
         if is_staff_collection:
+            meta_summary = generate_staff_summary(interviews)
             user_prompt = f"""
             # FE Staff Summary
             ## Task
@@ -165,16 +167,18 @@ def generate_meta_summary(interviews):
             summaries for different staff roles (principals, teachers, and
             support staff).
             13. Do not structure the response as JSON or with headers - just
-            plain text after the initial table.
+            plain text after the initial demographic table.
             14. Use markdown to format your response, if using paragraph
             headings make them level 4 headings.
             15. IMPORTANT: Do not fabricate any information, all findings must
             be explicitly in the interviews data, particularly demographic
             information. Circle back and double check your numbers against the
             interviews, recalculate if in doubt.
+
+            ## Consistent Data Analysis
+            {meta_summary}
             """
         else:
-            # Generate summary using normalized data already in MongoDB
             meta_summary = generate_interview_summary(interviews)
             user_prompt = f"""
             # FE Student Summary
@@ -200,9 +204,8 @@ def generate_meta_summary(interviews):
             1. Create a plain text summary of approximately 800 words.
             2. Focus on key patterns, trends, and insights that emerge across
             multiple student respondents.
-            3. Include quantitative insights about common themes (provide
-            approximate percentages in ranges: under 15%, 15-30%, 30-70%,
-            71-85%, over 85%) based on the consistent data analysis listed below.
+            3. Include quantitative insights about common themes (use the percentages provided
+            in the consistent data analysis) for topics based on the consistent data analysis listed below.
             Do not stray from the numbers contained there, these are definitive.
             Include this data at the top of your response, exactly how it is presented,
             including the tables.
