@@ -2,7 +2,6 @@ from student_data_summary import generate_interview_summary
 from login import setup_admin_page
 from database import get_database
 import config
-import copy
 import json
 from datetime import datetime
 
@@ -66,13 +65,12 @@ def generate_meta_summary(interviews):
         # Create a deep copy and customize based on collection type
         cleaned_interviews = []
         for interview in interviews:
-            interview_copy = copy.deepcopy(interview)
 
-            if "transcript" in interview_copy:
-                del interview_copy["transcript"]
+            if "transcript" in interview:
+                del interview["transcript"]
 
-            cleaned_interviews.append(interview_copy)
-        print(f"Number of interviews being summarised: {len(interview_copy)}")
+            cleaned_interviews.append(interview)
+        print(f"Number of interviews being summarised: {len(cleaned_interviews)}")
         interviews_json = json.dumps(
             cleaned_interviews, cls=MongoJSONEncoder
         )
@@ -141,9 +139,7 @@ def generate_meta_summary(interviews):
                 - Departments with counts and percentages
             3. Focus on key patterns, trends, and insights that emerge across
             multiple staff respondents.
-            4. Include quantitative insights about common themes (provide
-            approximate percentages in ranges: under 15%, 15-30%, 30-70%,
-            71-85%, over 85%) for topics such as:
+            4. Include quantitative insights about common themes (use the percentages provided in the consistent data analysis) for topics such as:
                 - Using AI for teaching
                 - Using AI for work
                 - Using AI outside education
@@ -238,7 +234,7 @@ def generate_meta_summary(interviews):
             ## Consistent Data Analysis
             {meta_summary}
             """
-
+        print(meta_summary)
         # Call OpenAI to generate the meta-summary
         response = client.chat.completions.create(
             model=config.MODEL['analysis'],
@@ -263,17 +259,19 @@ def generate_meta_summary(interviews):
         raise
 
 
-collection_options = config.MONGODB_COLLECTION_NAME.values()
+collection_options = config.MONGODB_COLLECTION_NAME.keys()
 
-selected_collection = st.selectbox(
-    "Select MongoDB Collection",
+selected_type = st.selectbox(
+    "Select Category",
     options=collection_options,
     index=0 if collection_options else None
 )
 
+selected_collection = config.MONGODB_COLLECTION_NAME.get(selected_type)
+
 # Add staff role filter if staff collection is selected
 selected_role = None
-if selected_collection and "staff" in selected_collection.lower():
+if selected_type and "staff" in selected_type.lower():
     staff_roles = ["All"] + config.MONGODB_STAFF_ROLES
     selected_role = st.selectbox("Filter by role:", staff_roles)
 
