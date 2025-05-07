@@ -52,8 +52,8 @@ def generate_ai_thematic_analysis(interviews):
 
         # Create the prompt for thematic analysis
         system_prompt = """
-        You are an experienced educational researcher specialising in thematic analysis of 
-        qualitative data. Your task is to analyse student responses about their experiences 
+        You are an experienced educational researcher specialising in thematic analysis of
+        qualitative data. Your task is to analyse student responses about their experiences
         with AI in education and identify key themes that emerge from the data.
 
         Your analysis should:
@@ -82,11 +82,11 @@ def generate_ai_thematic_analysis(interviews):
         ```
         {combined_responses}
         ```
-        
+
         ## Task
         Please conduct a thematic analysis on these student responses following the guidelines in my system instructions.
         Focus on identifying patterns in how students perceive, use, and think about AI in educational contexts.
-        
+
         ## Format Instructions
         1. Begin with a brief introduction about the purpose of the thematic analysis
         2. Present the themes table with columns: 'Theme', 'Description of theme', and 'Example quotations'
