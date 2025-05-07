@@ -225,7 +225,7 @@ def get_interviews(username=None, type="Student", role=None):
 
     Args:
         username (str, optional): Filter by username. Defaults to None.
-        limit (int, optional): Maximum number of records to return. 
+        limit (int, optional): Maximum number of records to return.
             Defaults to 100.
         type (str, optional): Type of interview ("Student" or "Staff").
             Defaults to "Student".
