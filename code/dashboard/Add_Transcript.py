@@ -7,6 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import login functionality from the centralized login module
 from login import setup_admin_page
+import config
 
 # Initialize the admin page with login
 if not setup_admin_page("Add Transcript | Gatsby AI Interview"):
@@ -23,7 +24,7 @@ with st.form("upload_transcript_form"):
     st.write(f"Type: {type_radio}")
 
     if type_radio == "Staff":
-        role = st.selectbox("Role", options=["principal", "teacher", "office"])
+        role = st.selectbox("Role", options=config.MONGODB_STAFF_ROLES)
 
     college = st.text_input("College")
     tags_text = st.text_input("Tags (comma separated)")
