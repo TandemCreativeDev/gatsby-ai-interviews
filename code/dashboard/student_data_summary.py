@@ -185,7 +185,7 @@ def format_demographic_table(demographic_stats, total_count):
         markdown += f"| {age_group} | {stats['count']} | {stats['percentage']}% |\n"
 
     markdown += """
-### Subjects Mentioned
+#### Subjects Mentioned
 """
     for subject, count in subjects_list:
         markdown += f"- {subject} ({count})\n"
@@ -210,13 +210,13 @@ def format_theme_analysis(theme_stats):
     Returns:
         str: Markdown formatted theme analysis
     """
-    markdown = "\n### Key Themes\n\n"
+    markdown = ""
 
     # AI for learning
     ai_learning_percent = round((theme_stats["ai_for_learning"]["count"] /
                                  theme_stats["ai_for_learning"]["total"]) * 100) if theme_stats["ai_for_learning"]["total"] > 0 else 0
 
-    markdown += "#### Using AI for Learning\n"
+    markdown += "##### Using AI for Learning\n"
     markdown += f"{ai_learning_percent}% of students ({theme_stats['ai_for_learning']['count']}/{theme_stats['ai_for_learning']['total']}) "
     markdown += "reported using AI tools to support their learning.\n\n"
 
@@ -224,7 +224,7 @@ def format_theme_analysis(theme_stats):
     ai_assignments_percent = round((theme_stats["ai_for_assignments"]["count"] /
                                     theme_stats["ai_for_assignments"]["total"]) * 100) if theme_stats["ai_for_assignments"]["total"] > 0 else 0
 
-    markdown += "#### Using AI for Assignments\n"
+    markdown += "##### Using AI for Assignments\n"
     markdown += f"{ai_assignments_percent}% of students ({theme_stats['ai_for_assignments']['count']}/{theme_stats['ai_for_assignments']['total']}) "
     markdown += "indicated they use AI for completing assignments and coursework.\n\n"
 
@@ -232,7 +232,7 @@ def format_theme_analysis(theme_stats):
     ai_outside_percent = round((theme_stats["ai_outside_learning"]["count"] /
                                 theme_stats["ai_outside_learning"]["total"]) * 100) if theme_stats["ai_outside_learning"]["total"] > 0 else 0
 
-    markdown += "#### Using AI Outside Learning\n"
+    markdown += "##### Using AI Outside Learning\n"
     markdown += f"{ai_outside_percent} of students ({theme_stats['ai_outside_learning']['count']}/{theme_stats['ai_outside_learning']['total']}) "
     markdown += "use AI tools outside of their academic work.\n\n"
 
@@ -242,7 +242,7 @@ def format_theme_analysis(theme_stats):
         neutral_percent = round((theme_stats["attitudes"]["neutral"] / theme_stats["attitudes"]["total"]) * 100)
         negative_percent = round((theme_stats["attitudes"]["negative"] / theme_stats["attitudes"]["total"]) * 100)
 
-        markdown += "#### Attitudes Towards AI in Education\n"
+        markdown += "##### Attitudes Towards AI in Education\n"
         markdown += "Student attitudes toward AI in education were:\n"
         markdown += f"- Positive: {positive_percent}% ({theme_stats['attitudes']['positive']} students)\n"
         markdown += f"- Neutral: {neutral_percent}% ({theme_stats['attitudes']['neutral']} students)\n"
@@ -252,7 +252,7 @@ def format_theme_analysis(theme_stats):
     concerns_percent = round((theme_stats["concerns_about_ai"]["count"] /
                               theme_stats["concerns_about_ai"]["total"]) * 100) if theme_stats["concerns_about_ai"]["total"] > 0 else 0
 
-    markdown += "#### Concerns About AI\n"
+    markdown += "##### Concerns About AI\n"
     markdown += f"{concerns_percent}% of students ({theme_stats['concerns_about_ai']['count']}/{theme_stats['concerns_about_ai']['total']}) "
     markdown += "expressed concerns about AI.\n"
 
@@ -286,10 +286,10 @@ def generate_interview_summary(interviews):
 Generated on {timestamp}
 Based on analysis of {total_count} student interviews
 
-## Demographics
+#### Demographics
 {demographic_table}
 
-## Thematic Analysis
+#### Thematic Analysis
 {theme_analysis}
 """
 
