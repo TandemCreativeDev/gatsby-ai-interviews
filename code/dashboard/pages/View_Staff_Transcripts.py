@@ -1,15 +1,7 @@
+import streamlit as st
+import config
 from transcript_utils import initialise_session_state, render_interviews
 from login import setup_admin_page
-import os
-import sys
-
-import streamlit as st
-
-# Add parent directory to path so we can import from parent modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Import database functions
-from database import get_staff_roles
 
 # Initialize the admin page with login
 if not setup_admin_page("View Staff Transcripts | Gatsby AI Interview"):
@@ -22,7 +14,7 @@ st.header("Staff Transcripts")
 initialise_session_state()
 
 # Add role filter dropdown
-staff_roles = get_staff_roles()
+staff_roles = ["All"] + config.MONGODB_STAFF_ROLES
 selected_role = st.selectbox("Filter by role:", staff_roles)
 
 # Create container for interviews

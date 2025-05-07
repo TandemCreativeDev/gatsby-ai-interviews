@@ -5,19 +5,9 @@ from keyword_analysis import (
 from themes_analysis import generate_ai_thematic_analysis
 
 from login import setup_admin_page
-from database import get_database, test_connection
+from database import get_database
 import config
-import sys
-import os
 import streamlit as st
-from datetime import datetime
-
-# Add parent directory to path so we can import from parent modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Import login functionality from the centralised login module
-
-# Import our thematic analysis functions
 
 # Initialize the admin page with login
 if not setup_admin_page("Thematic Analysis | Gatsby AI Interview"):
@@ -27,24 +17,8 @@ st.write("Generate thematic analysis of interview transcripts with focus on emer
 
 st.header("Transcript Thematic Analysis")
 
-# Get available collections
-db = get_database()
-if db is not None:
-    # This returns a list of collections in the database
-    available_collections = test_connection()
-    if not available_collections:
-        error_msg = ("No collections found in the database. "
-                     "Please check your MongoDB connection.")
-        st.error(error_msg)
-        raise ValueError(error_msg)
-else:
-    error_msg = ("Could not connect to the database. "
-                 "Please check your MongoDB connection.")
-    st.error(error_msg)
-    raise ValueError(error_msg)
-
 # Collection selection dropdown
-collection_options = available_collections
+collection_options = config.MONGODB_COLLECTION_NAME.values()
 
 selected_collection = st.selectbox(
     "Select MongoDB Collection",
@@ -55,8 +29,7 @@ selected_collection = st.selectbox(
 # Add staff role filter if staff collection is selected
 selected_role = None
 if selected_collection and "staff" in selected_collection.lower():
-    from database import get_staff_roles
-    staff_roles = get_staff_roles()
+    staff_roles = ["All"] + config.MONGODB_STAFF_ROLES
     selected_role = st.selectbox("Filter by role:", staff_roles)
 
 # Analysis type

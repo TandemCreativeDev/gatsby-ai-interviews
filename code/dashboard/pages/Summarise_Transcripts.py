@@ -1,19 +1,14 @@
 from student_data_summary import generate_interview_summary
 from login import setup_admin_page
-from database import get_database, test_connection
+from database import get_database
 import config
 import copy
 import json
-import os
-import sys
 from datetime import datetime
 
 import streamlit as st
 from bson import ObjectId
 from openai import OpenAI
-
-# Add parent directory to path so we can import from parent modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import login functionality from the centralised login module
 
@@ -268,24 +263,7 @@ def generate_meta_summary(interviews):
         raise
 
 
-# Get available collections
-db = get_database()
-if db is not None:
-    # This returns a list of collections in the database
-    available_collections = test_connection()
-    if not available_collections:
-        error_msg = ("No collections found in the database. "
-                     "Please check your MongoDB connection.")
-        st.error(error_msg)
-        raise ValueError(error_msg)
-else:
-    error_msg = ("Could not connect to the database. "
-                 "Please check your MongoDB connection.")
-    st.error(error_msg)
-    raise ValueError(error_msg)
-
-# Collection selection dropdown
-collection_options = available_collections
+collection_options = config.MONGODB_COLLECTION_NAME.values()
 
 selected_collection = st.selectbox(
     "Select MongoDB Collection",
@@ -296,8 +274,7 @@ selected_collection = st.selectbox(
 # Add staff role filter if staff collection is selected
 selected_role = None
 if selected_collection and "staff" in selected_collection.lower():
-    from database import get_staff_roles
-    staff_roles = get_staff_roles()
+    staff_roles = ["All"] + config.MONGODB_STAFF_ROLES
     selected_role = st.selectbox("Filter by role:", staff_roles)
 
 # Process button to retrieve the interviews
