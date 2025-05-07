@@ -54,7 +54,7 @@ def generate_ai_thematic_analysis(interviews):
         You are an experienced educational researcher specialising in thematic analysis of 
         qualitative data. Your task is to analyse student responses about their experiences 
         with AI in education and identify key themes that emerge from the data.
-        
+
         Your analysis should:
         1. Identify 5-7 major themes in the data
         2. For each theme, provide a clear description
@@ -64,18 +64,18 @@ def generate_ai_thematic_analysis(interviews):
         6. Focus on patterns that appear across multiple responses
         7. Avoid making claims about specific percentages - instead use words like "frequently", "commonly", "occasionally", "rarely" to express relative frequency
         8. Ensure all themes are grounded directly in the data, not inferred or assumed
-        
+
         After the table, provide a brief interpretative commentary on each theme (1-2 paragraphs per theme) that explores the implications for education.
-        
+
         Conclude with a short section titled "Implications for research" that identifies 2-3 key points about how this analysis could inform future research or education policy."""
 
         user_prompt = f"""
         # Thematic Analysis Request
-        
+
         ## Data
         Below are responses from students about their experiences with AI in education.
         Each response is separated by "---":
-        
+
         ```
         {combined_responses}
         ```
