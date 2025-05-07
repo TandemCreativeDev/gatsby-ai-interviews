@@ -1,6 +1,7 @@
 from keyword_analysis import (
     identify_themes_with_keywords,
-    format_keyword_themes
+    format_keyword_themes,
+    load_keyword_data
 )
 from themes_analysis import generate_ai_thematic_analysis
 
@@ -15,15 +16,14 @@ if not setup_admin_page("Thematic Analysis | Gatsby AI Interview"):
 
 st.write("Generate thematic analysis of interview transcripts with focus on emerging patterns.")
 
-st.header("Transcript Thematic Analysis")
 
-# Collection selection dropdown
-collection_options = config.MONGODB_COLLECTION_NAME.values()
+st.header("Transcript Thematic Analysis")
+available_collections = list(config.MONGODB_COLLECTION_NAME.values())
 
 selected_collection = st.selectbox(
     "Select MongoDB Collection",
-    options=collection_options,
-    index=0 if collection_options else None
+    options=available_collections,
+    index=0 if available_collections else None
 )
 
 # Add staff role filter if staff collection is selected
@@ -38,6 +38,25 @@ analysis_type = st.radio(
     ["Keyword-Based Analysis", "AI-Generated Thematic Analysis"],
     help="Choose between a faster keyword-based analysis or a more comprehensive AI-generated analysis"
 )
+
+# Keyword file selection for keyword-based analysis
+keyword_file = None
+if analysis_type == "Keyword-Based Analysis":
+    keyword_type = st.radio(
+        "Keyword Type",
+        ["Student", "Staff"],
+        horizontal=True
+    )
+    keyword_file = "data/keywords.json" if keyword_type == "Student" else "data/staff_keywords.json"
+
+    # Show sample of keywords
+    with st.expander("Preview Selected Keywords"):
+        keywords = load_keyword_data(keyword_file)
+        if keywords:
+            for category, terms in keywords.items():
+                st.write(f"**{category}:** {', '.join(terms[:5])}{'...' if len(terms) > 5 else ''}")
+        else:
+            st.warning(f"No keywords found in {keyword_file}")
 
 # Process button to retrieve the interviews
 if st.button("Retrieve and Analyse"):
@@ -71,12 +90,17 @@ if st.button("Retrieve and Analyse"):
                         f"Successfully retrieved {len(documents)} interviews{role_info} "
                         f"from the '{selected_collection}' collection.")
 
+                    # Debug: Show transcript sample
+                    if st.checkbox("Show transcript sample"):
+                        if documents[0].get("transcript"):
+                            st.code(documents[0]["transcript"][:500] + "...")
+
                     # Process based on selected analysis type
                     if analysis_type == "Keyword-Based Analysis":
                         with st.spinner("Performing keyword-based thematic analysis..."):
-                            # Perform keyword-based analysis
+                            # Perform keyword-based analysis with file path
                             theme_data = identify_themes_with_keywords(
-                                documents)
+                                documents, file_path=keyword_file)
                             markdown_report = format_keyword_themes(theme_data)
 
                             # Store and display results
@@ -128,12 +152,6 @@ This page offers two approaches to thematic analysis:
 **2. AI-Generated Thematic Analysis**
 - More nuanced identification of emerging themes using NLP
 - Includes verbatim quotes and deeper contextual understanding
-- Follows the structure requested by Daniel:
-  - Theme identification
-  - Theme descriptions
-  - Example quotations
-  - Interpretive commentary
-  - Research implications
+- Follows a structured approach with theme identification, descriptions, and examples
 
-Choose the approach that best meets your current needs.
 """)
