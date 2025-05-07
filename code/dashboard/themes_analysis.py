@@ -62,12 +62,14 @@ def generate_ai_thematic_analysis(interviews):
         4. Present the analysis in a table format with columns: 'Theme', 'Description of theme', and 'Example quotations'
         5. Use British English spelling (e.g., "summarise" not "summarize")
         6. Focus on patterns that appear across multiple responses
-        7. Avoid making claims about specific percentages - instead use words like "frequently", "commonly", "occasionally", "rarely" to express relative frequency
+        7. Avoid making claims about specific percentages - instead use words like "frequently", "commonly", "occasionally", "rarely" to express relative
+        frequency
         8. Ensure all themes are grounded directly in the data, not inferred or assumed
 
         After the table, provide a brief interpretative commentary on each theme (1-2 paragraphs per theme) that explores the implications for education.
 
-        Conclude with a short section titled "Implications for research" that identifies 2-3 key points about how this analysis could inform future research or education policy."""
+        Conclude with a short section titled "Implications for research" that identifies 2-3 key points about how this analysis could inform future research or
+        education policy."""
 
         user_prompt = f"""
         # Thematic Analysis Request
