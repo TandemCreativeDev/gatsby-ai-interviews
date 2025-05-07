@@ -115,6 +115,7 @@ BACKUPS_DIRECTORY = os.path.join(BASE_DIR, "../backups/")
 # MongoDB Configuration
 MONGODB_DB_NAME = "AIinterview_database"
 MONGODB_COLLECTION_NAME = {"Student": "students", "Staff": "staff"}
+MONGODB_STAFF_ROLES = ["principal", "teacher", "office"]
 
 
 # Avatars displayed in the chat interface
