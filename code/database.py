@@ -219,13 +219,13 @@ def upload_local_backups(type="Student"):
             logger.error(f"Error processing backup file {backup_path}: {e}")
 
 
-def get_interviews(username=None, limit=100, type="Student", role=None):
+def get_interviews(username=None, type="Student", role=None):
     """
     Retrieve interview data from MongoDB
 
     Args:
         username (str, optional): Filter by username. Defaults to None.
-        limit (int, optional): Maximum number of records to return. 
+        limit (int, optional): Maximum number of records to return.
             Defaults to 100.
         type (str, optional): Type of interview ("Student" or "Staff").
             Defaults to "Student".
@@ -243,14 +243,14 @@ def get_interviews(username=None, limit=100, type="Student", role=None):
             if username:
                 filter_query["username"] = {
                     "$regex": f"^{username}", "$options": "i"}
-                    
+
             # Add role filter for Staff interviews
             if role and type == "Staff" and role != "All":
                 filter_query["role"] = role
 
             # Query database
             cursor = collection.find(filter_query).sort(
-                "timestamp", -1).limit(limit)
+                "timestamp", -1)
 
             # Convert cursor to list
             interviews = list(cursor)
@@ -279,10 +279,10 @@ def get_staff_roles():
         if collection is not None:
             # Find unique roles in the staff collection
             roles = collection.distinct("role")
-            
+
             # Add "All" option and sort
             all_roles = ["All"] + sorted(roles)
-            
+
             logger.info(f"Retrieved {len(roles)} unique staff roles")
             return all_roles
         else:

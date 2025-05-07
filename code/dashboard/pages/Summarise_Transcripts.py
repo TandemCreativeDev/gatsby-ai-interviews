@@ -1,20 +1,16 @@
-from database import get_database, test_connection
+from student_data_summary import generate_interview_summary
+from staff_data_summary import generate_staff_summary
+from login import setup_admin_page
+from database import get_database
 import config
-import copy
 import json
-import os
-import sys
 from datetime import datetime
 
 import streamlit as st
 from bson import ObjectId
 from openai import OpenAI
 
-# Add parent directory to path so we can import from parent modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 # Import login functionality from the centralised login module
-from login import setup_admin_page
 
 
 # Custom JSON encoder to handle MongoDB ObjectId and datetime
@@ -70,13 +66,12 @@ def generate_meta_summary(interviews):
         # Create a deep copy and customize based on collection type
         cleaned_interviews = []
         for interview in interviews:
-            interview_copy = copy.deepcopy(interview)
 
-            if "transcript" in interview_copy:
-                del interview_copy["transcript"]
+            if "transcript" in interview:
+                del interview["transcript"]
 
-            cleaned_interviews.append(interview_copy)
-        print(f"Number of interviews being summarised: {len(interview_copy)}")
+            cleaned_interviews.append(interview)
+        print(f"Number of interviews being summarised: {len(cleaned_interviews)}")
         interviews_json = json.dumps(
             cleaned_interviews, cls=MongoJSONEncoder
         )
@@ -101,6 +96,7 @@ def generate_meta_summary(interviews):
         """
 
         if is_staff_collection:
+            meta_summary = generate_staff_summary(interviews)
             user_prompt = f"""
             # FE Staff Summary
             ## Task
@@ -145,9 +141,7 @@ def generate_meta_summary(interviews):
                 - Departments with counts and percentages
             3. Focus on key patterns, trends, and insights that emerge across
             multiple staff respondents.
-            4. Include quantitative insights about common themes (provide
-            approximate percentages in ranges: under 15%, 15-30%, 30-70%,
-            71-85%, over 85%) for topics such as:
+            4. Include quantitative insights about common themes (use the percentages provided in the consistent data analysis) for topics such as:
                 - Using AI for teaching
                 - Using AI for work
                 - Using AI outside education
@@ -173,15 +167,19 @@ def generate_meta_summary(interviews):
             summaries for different staff roles (principals, teachers, and
             support staff).
             13. Do not structure the response as JSON or with headers - just
-            plain text after the initial table.
+            plain text after the initial demographic table.
             14. Use markdown to format your response, if using paragraph
             headings make them level 4 headings.
             15. IMPORTANT: Do not fabricate any information, all findings must
             be explicitly in the interviews data, particularly demographic
             information. Circle back and double check your numbers against the
             interviews, recalculate if in doubt.
+
+            ## Consistent Data Analysis
+            {meta_summary}
             """
         else:
+            meta_summary = generate_interview_summary(interviews)
             user_prompt = f"""
             # FE Student Summary
 
@@ -204,35 +202,21 @@ def generate_meta_summary(interviews):
 
             ## Criteria
             1. Create a plain text summary of approximately 800 words.
-            2. Begin with a comprehensive demographic data table formatted in
-            markdown (but not in a code block), showing:
-                - Gender breakdown (male, female, unknown) with counts and
-                percentages
-                - College breakdown with counts and percentages
-                - Age groups (under 25, over 25, unknown) with counts and
-                percentages
-                - Subjects mentioned (list with counts)
-                - Course types (A-levels, BTECs, Apprenticeships, T-levels)
-                with counts and percentages
-            3. Focus on key patterns, trends, and insights that emerge across
+            2. Focus on key patterns, trends, and insights that emerge across
             multiple student respondents.
-            4. Include quantitative insights about common themes (provide
-            approximate percentages in ranges: under 15%, 15-30%, 30-70%,
-            71-85%, over 85%) for topics such as:
-                - Using AI for learning
-                - Using AI for assignments
-                - Using AI outside learning
-                - Attitudes towards AI in education
-                - Concerns about AI
-                - Other prominent themes that emerge
-            5. Present insights on how different demographic groups may have
+            3. Include quantitative insights about common themes (use the percentages provided
+            in the consistent data analysis) for topics based on the consistent data analysis listed below.
+            Do not stray from the numbers contained there, these are definitive.
+            Include this data at the top of your response, exactly how it is presented,
+            including the tables.
+            4. Present insights on how different demographic groups may have
             different perspectives or experiences.
-            6. Highlight any notable consensus or divergence in opinions.
-            7. Anonymise all references to specific students, teachers, or
+            5. Highlight any notable consensus or divergence in opinions.
+            6. Anonymise all references to specific students, teachers, or
             colleges in examples.
-            8. Use British English spelling (e.g., "summarise" not
+            7. Use British English spelling (e.g., "summarise" not
             "summarize").
-            9. Try to provide the information in three sections as follows:
+            8. Try to provide the information in three sections as follows:
                 a. Current use of AI by students
                     - Include examples of how AI is used for coursework,
                     research, or personal development
@@ -241,16 +225,19 @@ def generate_meta_summary(interviews):
                 c. Issues and challenges students identify around AI in
                 education
                     - Include examples of concerns or barriers students mention
-            10. Do not structure the response as JSON or with headers - just
+            9. Do not structure the response as JSON or with headers - just
             plain text after the initial demographic table.
-            11. Use markdown to format your response, if using paragraph
+            10. Use markdown to format your response, if using paragraph
             headings make them level 4 headings.
-            12. IMPORTANT: Do not fabricate any information, all findings must
+            11. IMPORTANT: Do not fabricate any information, all findings must
             be explicitly in the interviews data, particularly demographic
             information. Circle back and double check your numbers against the
             interviews, recalculate if in doubt.
-            """
 
+            ## Consistent Data Analysis
+            {meta_summary}
+            """
+        print(meta_summary)
         # Call OpenAI to generate the meta-summary
         response = client.chat.completions.create(
             model=config.MODEL['analysis'],
@@ -261,8 +248,8 @@ def generate_meta_summary(interviews):
         )
 
         # Extract the result
-        result = response.choices[0].message.content
 
+        result = response.choices[0].message.content
         return result
 
     except Exception as e:
@@ -275,36 +262,20 @@ def generate_meta_summary(interviews):
         raise
 
 
-# Get available collections
-db = get_database()
-if db is not None:
-    # This returns a list of collections in the database
-    available_collections = test_connection()
-    if not available_collections:
-        error_msg = ("No collections found in the database. "
-                     "Please check your MongoDB connection.")
-        st.error(error_msg)
-        raise ValueError(error_msg)
-else:
-    error_msg = ("Could not connect to the database. "
-                 "Please check your MongoDB connection.")
-    st.error(error_msg)
-    raise ValueError(error_msg)
+collection_options = config.MONGODB_COLLECTION_NAME.keys()
 
-# Collection selection dropdown
-collection_options = available_collections
-
-selected_collection = st.selectbox(
-    "Select MongoDB Collection",
+selected_type = st.selectbox(
+    "Select Category",
     options=collection_options,
     index=0 if collection_options else None
 )
 
+selected_collection = config.MONGODB_COLLECTION_NAME.get(selected_type)
+
 # Add staff role filter if staff collection is selected
 selected_role = None
-if selected_collection and "staff" in selected_collection.lower():
-    from database import get_staff_roles
-    staff_roles = get_staff_roles()
+if selected_type and "staff" in selected_type.lower():
+    staff_roles = ["All"] + config.MONGODB_STAFF_ROLES
     selected_role = st.selectbox("Filter by role:", staff_roles)
 
 # Process button to retrieve the interviews
@@ -319,11 +290,11 @@ if st.button("Retrieve Interviews"):
 
                 # Create filter query
                 filter_query = {}
-                
+
                 # Apply role filter for staff collections
                 if "staff" in selected_collection.lower() and selected_role and selected_role != "All":
                     filter_query["role"] = selected_role
-                
+
                 # Query documents with filter
                 documents = list(collection.find(filter_query))
 
@@ -335,7 +306,7 @@ if st.button("Retrieve Interviews"):
                     role_info = ""
                     if "staff" in selected_collection.lower() and selected_role and selected_role != "All":
                         role_info = f" with role '{selected_role}'"
-                    
+
                     st.success(
                         f"Successfully retrieved {len(documents)} interviews{role_info} "
                         f"from the '{selected_collection}' collection.")
@@ -363,10 +334,10 @@ if 'interviews' in st.session_state and st.button("Generate Summary"):
             role_info = ""
             if selected_role and selected_role != "All":
                 role_info = f" ({selected_role})"
-            
+
             st.subheader(f"Summary of Staff Interviews{role_info}")
             file_prefix = "staff"
-            
+
             # Include role in the filename if filtered
             if selected_role and selected_role != "All":
                 file_prefix = f"staff_{selected_role.lower()}"

@@ -117,6 +117,8 @@ def render_interviews(container, interview_type, role=None):
         interview_type: Type of interview ("Student" or "Staff")
         role: Optional role filter for Staff interviews
     """
+    if role == "All":
+        role = None
     with container:
         try:
             with st.spinner(f"Loading {interview_type.lower()} interviews..."):
