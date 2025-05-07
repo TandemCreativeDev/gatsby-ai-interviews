@@ -2,6 +2,7 @@ import streamlit as st
 import datetime
 from openai import OpenAI
 from keyword_analysis import extract_user_prompts
+import config
 
 
 def generate_ai_thematic_analysis(interviews):
@@ -25,15 +26,15 @@ def generate_ai_thematic_analysis(interviews):
             transcript = interview.get("transcript", "")
             user_responses = extract_user_prompts(transcript)
             all_prompts.extend(user_responses)
-
+        limit = 200
         # Limit number of responses if there are too many
-        if len(all_prompts) > 100:
+        if len(all_prompts) > limit:
             # Take a representative sample
             st.info(
-                f"Found {len(all_prompts)} responses. Selecting a representative sample of 100 for analysis.")
-            sampling_interval = len(all_prompts) // 100
+                f"Found {len(all_prompts)} responses. Selecting a representative sample of {limit} for analysis.")
+            sampling_interval = len(all_prompts) // limit
             sample_prompts = [all_prompts[i] for i in range(
-                0, len(all_prompts), sampling_interval)][:100]
+                0, len(all_prompts), sampling_interval)][:limit]
         else:
             sample_prompts = all_prompts
 
@@ -92,6 +93,7 @@ def generate_ai_thematic_analysis(interviews):
         3. Follow with interpretative commentary for each theme
         4. Conclude with "Implications for research" section
         5. Use markdown formatting throughout for readability
+        6. IMPORTANT: Do not use CSS or HTML
         """
 
         # Show progress message
@@ -100,7 +102,7 @@ def generate_ai_thematic_analysis(interviews):
 
         # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-4-turbo",  # Use the specified model or another suitable one
+            model=config.MODEL["chat"],  # Use the specified model or another suitable one
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
