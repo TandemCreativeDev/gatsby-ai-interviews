@@ -18,13 +18,15 @@ st.write("Generate thematic analysis of interview transcripts with focus on emer
 
 
 st.header("Transcript Thematic Analysis")
-available_collections = list(config.MONGODB_COLLECTION_NAME.values())
+available_collections = list(config.MONGODB_COLLECTION_NAME.keys())
 
-selected_collection = st.selectbox(
-    "Select MongoDB Collection",
+selected_type = st.selectbox(
+    "Select Category",
     options=available_collections,
     index=0 if available_collections else None
 )
+
+selected_collection = config.MONGODB_COLLECTION_NAME.get(selected_type)
 
 # Add staff role filter if staff collection is selected
 selected_role = None
@@ -42,11 +44,7 @@ analysis_type = st.radio(
 # Keyword file selection for keyword-based analysis
 keyword_file = None
 if analysis_type == "Keyword-Based Analysis":
-    keyword_type = st.radio(
-        "Keyword Type",
-        ["Student", "Staff"],
-        horizontal=True
-    )
+    keyword_type = selected_type
     keyword_file = "data/keywords.json" if keyword_type == "Student" else "data/staff_keywords.json"
 
     # Show sample of keywords
