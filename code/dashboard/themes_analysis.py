@@ -5,12 +5,13 @@ from keyword_analysis import extract_user_prompts
 import config
 
 
-def generate_ai_thematic_analysis(interviews):
+def generate_ai_thematic_analysis(interviews, user_type="students"):
     """
     Generate a thematic analysis using OpenAI
 
     Args:
         interviews (list): List of interview documents
+        user_type (str): Type of user analysis - either 'students' or 'staff'
 
     Returns:
         str: AI-generated thematic analysis
@@ -50,10 +51,10 @@ def generate_ai_thematic_analysis(interviews):
         # Initialize OpenAI client
         client = OpenAI(api_key=st.secrets["API_KEY_OPENAI"])
 
-        # Create the prompt for thematic analysis
-        system_prompt = """
+        # Create the prompt for thematic analysis based on user type
+        system_prompt = f"""
         You are an experienced educational researcher specialising in thematic analysis of
-        qualitative data. Your task is to analyse student responses about their experiences
+        qualitative data. Your task is to analyse {user_type} responses about their experiences
         with AI in education and identify key themes that emerge from the data.
 
         Your analysis should:
@@ -76,7 +77,7 @@ def generate_ai_thematic_analysis(interviews):
         # Thematic Analysis Request
 
         ## Data
-        Below are responses from students about their experiences with AI in education.
+        Below are responses from {user_type} about their experiences with AI in education.
         Each response is separated by "---":
 
         ```
@@ -84,8 +85,8 @@ def generate_ai_thematic_analysis(interviews):
         ```
 
         ## Task
-        Please conduct a thematic analysis on these student responses following the guidelines in my system instructions.
-        Focus on identifying patterns in how students perceive, use, and think about AI in educational contexts.
+        Please conduct a thematic analysis on these {user_type} responses following the guidelines in my system instructions.
+        Focus on identifying patterns in how {user_type} perceive, use, and think about AI in educational contexts.
 
         ## Format Instructions
         1. Begin with a brief introduction about the purpose of the thematic analysis
@@ -119,7 +120,7 @@ def generate_ai_thematic_analysis(interviews):
         header = f"""# AI-Generated Thematic Analysis
 
 Generated on: {timestamp}
-Based on analysis of {len(interviews)} interviews containing {len(all_prompts)} student responses
+Based on analysis of {len(interviews)} interviews containing {len(all_prompts)} {user_type} responses
 
 """
 
