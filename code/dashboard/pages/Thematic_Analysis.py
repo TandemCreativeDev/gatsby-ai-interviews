@@ -88,11 +88,6 @@ if st.button("Retrieve and Analyse"):
                         f"Successfully retrieved {len(documents)} interviews{role_info} "
                         f"from the '{selected_collection}' collection.")
 
-                    # Debug: Show transcript sample
-                    if st.checkbox("Show transcript sample"):
-                        if documents[0].get("transcript"):
-                            st.code(documents[0]["transcript"][:500] + "...")
-
                     # Process based on selected analysis type
                     if analysis_type == "Keyword-Based Analysis":
                         with st.spinner("Performing keyword-based thematic analysis..."):
