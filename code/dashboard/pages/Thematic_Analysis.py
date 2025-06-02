@@ -109,9 +109,12 @@ if st.button("Retrieve and Analyse"):
                             )
                     else:  # AI-Generated Analysis
                         with st.spinner("Generating AI thematic analysis (this may take a few minutes)..."):
+                            # Determine user type based on selected collection
+                            user_type = "staff" if "staff" in selected_collection.lower() else "students"
+                            
                             # Generate AI thematic analysis
                             ai_analysis = generate_ai_thematic_analysis(
-                                documents)
+                                documents, user_type=user_type)
 
                             # Store and display results
                             st.session_state['thematic_analysis'] = ai_analysis
